@@ -71,6 +71,65 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-222" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/02/02/222/" class="article-date">
+  <time class="dt-published" datetime="2022-02-02T10:25:29.553Z" itemprop="datePublished">2022-02-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <hr>
+<p>title: Hexo渲染LaTeX公式关键<br>date: 2020-09-30 22:27:01<br>tags:</p>
+<h2 id="mathjax-true"><a href="#mathjax-true" class="headerlink" title="mathjax: true"></a>mathjax: true</h2><h2 id="卡尔曼滤波速查文档2"><a href="#卡尔曼滤波速查文档2" class="headerlink" title="卡尔曼滤波速查文档2"></a>卡尔曼滤波速查文档2</h2><h2 id="KF"><a href="#KF" class="headerlink" title="KF"></a>KF</h2><p>Predict:</p>
+<script type="math/tex; mode=display">
+\hat{x}_t = A_tx_{t-1}+B_tu_t\\
+\hat{P}_t = A_tP_{t-1}A_t^T+R_t</script><p>Update:</p>
+<script type="math/tex; mode=display">
+K_t = \hat{P}_tC^T_t(C_t\hat{P}_tC^T_t+Q_t)^{-1}\\
+x_t = \hat{x}_t+K_t(z_t-C_t\hat{x}_t)\\
+P_t = (I-K_tC_t)\hat{P}_t</script><h2 id="EKF"><a href="#EKF" class="headerlink" title="EKF"></a>EKF</h2><p>Predict:</p>
+<script type="math/tex; mode=display">
+\hat{x}_t = f(x_{t-1},u_t)\\
+\hat{P}_t = F_tP_{t-1}F_t^T+R_t</script><p>Update:</p>
+<script type="math/tex; mode=display">
+K_t = \hat{P}_tH^T_t(H_t\hat{P}_tH^T_t+Q_t)^{-1}\\
+x_t = \hat{x}_t+K_t(z_t-h(\hat{x}_t))\\
+P_t = (I-K_tH_t)\hat{P}_t</script><h2 id="iEKF"><a href="#iEKF" class="headerlink" title="iEKF"></a>iEKF</h2><p>Predict:</p>
+<script type="math/tex; mode=display">
+\hat{x}_t = f(x_{t-1},u_t)\\
+\hat{P}_t = F_tP_{t-1}F_t^T+R_t</script><p>Update:</p>
+<script type="math/tex; mode=display">
+\hat{x}_t^0 = \hat{x}_t\\
+\hat{P}_t^0 = \hat{P}_t\\
+\begin{align}
+for &\space i=1 \space to \space times \space do\\
+&K_t^i = \hat{P}^{i-1}_t {H^{i-1}_t}^T (H_t^{i-1}\hat{P}_t^{i-1} {H^{i-1}_t}^T+Q_t)^{-1}\\
+&\hat{x}_t^i = \hat{x}_t^{i-1} + K_t^i(z_t-h(\hat{x}_t^{i-1}))\\
+&\hat{P}_t^i = (I-K_t^i H_t^{i-1})\hat{P}_t^{i-1}\\
+end&for\\
+\end{align}\\
+x_t = \hat{x}_t^i\\
+P_t = \hat{P}_t^i</script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://asdleng.github.io/2022/02/02/222/" data-id="ckzv7z3kf0001b4uw3qu34zsv" data-title="" class="article-share-link">Teilen</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-111" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2021/12/22/111/" class="article-date">
@@ -85,7 +144,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2021/12/22/111/">中华人民共和国万岁</a>
+      <a class="p-name article-title" href="/2021/12/22/111/">中华人民共和国万岁2</a>
     </h1>
   
 
@@ -100,7 +159,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://asdleng.github.io/2021/12/22/111/" data-id="ckzv7w9z8000204uw4tmob5a4" data-title="中华人民共和国万岁" class="article-share-link">Teilen</a>
+      <a data-url="https://asdleng.github.io/2021/12/22/111/" data-id="ckzv7z3k60000b4uwaci043w1" data-title="中华人民共和国万岁2" class="article-share-link">Teilen</a>
       
       
       
@@ -147,74 +206,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://asdleng.github.io/2021/12/22/hello-world/" data-id="ckzv7w9z5000104uw571e189s" data-title="Hello World" class="article-share-link">Teilen</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-222" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2020/09/30/222/" class="article-date">
-  <time class="dt-published" datetime="2020-09-30T14:27:01.000Z" itemprop="datePublished">2020-09-30</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2020/09/30/222/">Hexo渲染LaTeX公式关键</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h2 id="卡尔曼滤波速查文档"><a href="#卡尔曼滤波速查文档" class="headerlink" title="卡尔曼滤波速查文档"></a>卡尔曼滤波速查文档</h2><h2 id="KF"><a href="#KF" class="headerlink" title="KF"></a>KF</h2><p>Predict:</p>
-<script type="math/tex; mode=display">
-\hat{x}_t = A_tx_{t-1}+B_tu_t\\
-\hat{P}_t = A_tP_{t-1}A_t^T+R_t</script><p>Update:</p>
-<script type="math/tex; mode=display">
-K_t = \hat{P}_tC^T_t(C_t\hat{P}_tC^T_t+Q_t)^{-1}\\
-x_t = \hat{x}_t+K_t(z_t-C_t\hat{x}_t)\\
-P_t = (I-K_tC_t)\hat{P}_t</script><h2 id="EKF"><a href="#EKF" class="headerlink" title="EKF"></a>EKF</h2><p>Predict:</p>
-<script type="math/tex; mode=display">
-\hat{x}_t = f(x_{t-1},u_t)\\
-\hat{P}_t = F_tP_{t-1}F_t^T+R_t</script><p>Update:</p>
-<script type="math/tex; mode=display">
-K_t = \hat{P}_tH^T_t(H_t\hat{P}_tH^T_t+Q_t)^{-1}\\
-x_t = \hat{x}_t+K_t(z_t-h(\hat{x}_t))\\
-P_t = (I-K_tH_t)\hat{P}_t</script><h2 id="iEKF"><a href="#iEKF" class="headerlink" title="iEKF"></a>iEKF</h2><p>Predict:</p>
-<script type="math/tex; mode=display">
-\hat{x}_t = f(x_{t-1},u_t)\\
-\hat{P}_t = F_tP_{t-1}F_t^T+R_t</script><p>Update:</p>
-<script type="math/tex; mode=display">
-\hat{x}_t^0 = \hat{x}_t\\
-\hat{P}_t^0 = \hat{P}_t\\
-\begin{align}
-for &\space i=1 \space to \space times \space do\\
-&K_t^i = \hat{P}^{i-1}_t {H^{i-1}_t}^T (H_t^{i-1}\hat{P}_t^{i-1} {H^{i-1}_t}^T+Q_t)^{-1}\\
-&\hat{x}_t^i = \hat{x}_t^{i-1} + K_t^i(z_t-h(\hat{x}_t^{i-1}))\\
-&\hat{P}_t^i = (I-K_t^i H_t^{i-1})\hat{P}_t^{i-1}\\
-end&for\\
-\end{align}\\
-x_t = \hat{x}_t^i\\
-P_t = \hat{P}_t^i</script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://asdleng.github.io/2020/09/30/222/" data-id="ckzv7w9yx000004uw2j6k1x1k" data-title="Hexo渲染LaTeX公式关键" class="article-share-link">Teilen</a>
+      <a data-url="https://asdleng.github.io/2021/12/22/hello-world/" data-id="ckzv7z3ki0002b4uw5kjf1qf1" data-title="Hello World" class="article-share-link">Teilen</a>
       
       
       
@@ -244,7 +236,7 @@ P_t = \hat{P}_t^i</script>
   <div class="widget-wrap">
     <h3 class="widget-title">Archiv</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">December 2021</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">September 2020</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">February 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">December 2021</a></li></ul>
     </div>
   </div>
 
@@ -257,15 +249,15 @@ P_t = \hat{P}_t^i</script>
       <ul>
         
           <li>
-            <a href="/2021/12/22/111/">中华人民共和国万岁</a>
+            <a href="/2022/02/02/222/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2021/12/22/111/">中华人民共和国万岁2</a>
           </li>
         
           <li>
             <a href="/2021/12/22/hello-world/">Hello World</a>
-          </li>
-        
-          <li>
-            <a href="/2020/09/30/222/">Hexo渲染LaTeX公式关键</a>
           </li>
         
       </ul>
