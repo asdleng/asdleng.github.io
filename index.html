@@ -341,7 +341,7 @@ mjx-container[display="true"] + br {
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS2/">
+    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="asdleng">
@@ -360,7 +360,7 @@ mjx-container[display="true"] + br {
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2022/02/28/VINS2/" itemprop="url">VINS-Mono学习笔记2——feature_tracker</a></h1>
+                <a class="post-title-link" href="/2022/02/28/VINS3/" itemprop="url">VINS-Mono学习笔记3——estimator</a></h1>
         
 
         <div class="post-meta">
@@ -412,44 +412,214 @@ mjx-container[display="true"] + br {
       
         
           
-            <p>本节主要内容包括：</p>
-<p>对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪； 检测新的角点特征以保证每个图像特征的最小数目； 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布； 利用基本矩阵模型的RANSAC算法进行外点剔除；</p>
+            <p>estimator是VINS-Mono的核心模块，其主要内容包括了VINS的初始化、紧耦合的滑动窗口非线性优化、关键帧选择</p>
+<h4 id="初始化过程的参数和步骤按初始化顺序">初始化过程的参数和步骤(按初始化顺序)：</h4>
+<ul>
+<li>陀螺仪bias</li>
+<li>SfM每一帧的速度，重力向量，尺度因子</li>
+<li><em>Gravity Refifinement</em>，根据<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.566ex" xmlns="http://www.w3.org/2000/svg" width="13.285ex" height="2.452ex" role="img" focusable="false" viewBox="0 -833.9 5872.1 1083.9"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D454" d="M311 43Q296 30 267 15T206 0Q143 0 105 45T66 160Q66 265 143 353T314 442Q361 442 401 394L404 398Q406 401 409 404T418 412T431 419T447 422Q461 422 470 413T480 394Q480 379 423 152T363 -80Q345 -134 286 -169T151 -205Q10 -205 10 -137Q10 -111 28 -91T74 -71Q89 -71 102 -80T116 -111Q116 -121 114 -130T107 -144T99 -154T92 -162L90 -164H91Q101 -167 151 -167Q189 -167 211 -155Q234 -144 254 -122T282 -75Q288 -56 298 -13Q311 35 311 43ZM384 328L380 339Q377 350 375 354T369 368T359 382T346 393T328 402T306 405Q262 405 221 352Q191 313 171 233T151 117Q151 38 213 38Q269 38 323 108L331 118L384 328Z"></path></g><g data-mml-node="mo" transform="translate(754.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mn" transform="translate(1810.6,0)"><path data-c="39" d="M352 287Q304 211 232 211Q154 211 104 270T44 396Q42 412 42 436V444Q42 537 111 606Q171 666 243 666Q245 666 249 666T257 665H261Q273 665 286 663T323 651T370 619T413 560Q456 472 456 334Q456 194 396 97Q361 41 312 10T208 -22Q147 -22 108 7T68 93T121 149Q143 149 158 135T173 96Q173 78 164 65T148 49T135 44L131 43Q131 41 138 37T164 27T206 22H212Q272 22 313 86Q352 142 352 280V287ZM244 248Q292 248 321 297T351 430Q351 508 343 542Q341 552 337 562T323 588T293 615T246 625Q208 625 181 598Q160 576 154 546T147 441Q147 358 152 329T172 282Q197 248 244 248Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="38" d="M70 417T70 494T124 618T248 666Q319 666 374 624T429 515Q429 485 418 459T392 417T361 389T335 371T324 363L338 354Q352 344 366 334T382 323Q457 264 457 174Q457 95 399 37T249 -22Q159 -22 101 29T43 155Q43 263 172 335L154 348Q133 361 127 368Q70 417 70 494ZM286 386L292 390Q298 394 301 396T311 403T323 413T334 425T345 438T355 454T364 471T369 491T371 513Q371 556 342 586T275 624Q268 625 242 625Q201 625 165 599T128 534Q128 511 141 492T167 463T217 431Q224 426 228 424L286 386ZM250 21Q308 21 350 55T392 137Q392 154 387 169T375 194T353 216T330 234T301 253T274 270Q260 279 244 289T218 306L210 311Q204 311 181 294T133 239T107 157Q107 98 150 60T250 21Z" transform="translate(778,0)"></path><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z" transform="translate(1278,0)"></path></g><g data-mml-node="mi" transform="translate(3588.6,0)"><path data-c="1D45A" d="M21 287Q22 293 24 303T36 341T56 388T88 425T132 442T175 435T205 417T221 395T229 376L231 369Q231 367 232 367L243 378Q303 442 384 442Q401 442 415 440T441 433T460 423T475 411T485 398T493 385T497 373T500 364T502 357L510 367Q573 442 659 442Q713 442 746 415T780 336Q780 285 742 178T704 50Q705 36 709 31T724 26Q752 26 776 56T815 138Q818 149 821 151T837 153Q857 153 857 145Q857 144 853 130Q845 101 831 73T785 17T716 -10Q669 -10 648 17T627 73Q627 92 663 193T700 345Q700 404 656 404H651Q565 404 506 303L499 291L466 157Q433 26 428 16Q415 -11 385 -11Q372 -11 364 -4T353 8T350 18Q350 29 384 161L420 307Q423 322 423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 181Q151 335 151 342Q154 357 154 369Q154 405 129 405Q107 405 92 377T69 316T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(4466.6,0)"><g data-mml-node="mo"><path data-c="2F" d="M423 750Q432 750 438 744T444 730Q444 725 271 248T92 -240Q85 -250 75 -250Q68 -250 62 -245T56 -231Q56 -221 230 257T407 740Q411 750 423 750Z"></path></g></g><g data-mml-node="msup" transform="translate(4966.6,0)"><g data-mml-node="mi"><path data-c="1D460" d="M131 289Q131 321 147 354T203 415T300 442Q362 442 390 415T419 355Q419 323 402 308T364 292Q351 292 340 300T328 326Q328 342 337 354T354 372T367 378Q368 378 368 379Q368 382 361 388T336 399T297 405Q249 405 227 379T204 326Q204 301 223 291T278 274T330 259Q396 230 396 163Q396 135 385 107T352 51T289 7T195 -10Q118 -10 86 19T53 87Q53 126 74 143T118 160Q133 160 146 151T160 120Q160 94 142 76T111 58Q109 57 108 57T107 55Q108 52 115 47T146 34T201 27Q237 27 263 38T301 66T318 97T323 122Q323 150 302 164T254 181T195 196T148 231Q131 256 131 289Z"></path></g><g data-mml-node="mn" transform="translate(502,363) scale(0.707)"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g></g></g></g></svg></mjx-container></span>这一特点，对重力方向再进行优化</li>
+<li>以启动瞬间的位置为原点，重力方向为z轴负向，把所有初始化的参数旋转到该坐标系下，对SfM加尺度因子</li>
+</ul>
+<h4 id="非线性滑动窗口优化">非线性滑动窗口优化：</h4>
+<p>由n个关键帧组成的滑动窗口，根据关键帧选择策略，对其进行添加新的帧，边缘化掉老帧</p>
+<h5 id="状态向量">状态向量：</h5>
+<ul>
+<li>每一帧图像接收时刻的<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.667ex" xmlns="http://www.w3.org/2000/svg" width="11.226ex" height="2.237ex" role="img" focusable="false" viewBox="0 -694 4962 989"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mo" transform="translate(503,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(947.7,0)"><path data-c="1D463" d="M173 380Q173 405 154 405Q130 405 104 376T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Q21 294 29 316T53 368T97 419T160 441Q202 441 225 417T249 361Q249 344 246 335Q246 329 231 291T200 202T182 113Q182 86 187 69Q200 26 250 26Q287 26 319 60T369 139T398 222T409 277Q409 300 401 317T383 343T365 361T357 383Q357 405 376 424T417 443Q436 443 451 425T467 367Q467 340 455 284T418 159T347 40T241 -11Q177 -11 139 22Q102 54 102 117Q102 148 110 181T151 298Q173 362 173 380Z"></path></g><g data-mml-node="mo" transform="translate(1432.7,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(1877.3,0)"><path data-c="1D45E" d="M33 157Q33 258 109 349T280 441Q340 441 372 389Q373 390 377 395T388 406T404 418Q438 442 450 442Q454 442 457 439T460 434Q460 425 391 149Q320 -135 320 -139Q320 -147 365 -148H390Q396 -156 396 -157T393 -175Q389 -188 383 -194H370Q339 -192 262 -192Q234 -192 211 -192T174 -192T157 -193Q143 -193 143 -185Q143 -182 145 -170Q149 -154 152 -151T172 -148Q220 -148 230 -141Q238 -136 258 -53T279 32Q279 33 272 29Q224 -10 172 -10Q117 -10 75 30T33 157ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g data-mml-node="mo" transform="translate(2337.3,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(2782,0)"><g data-mml-node="mi"><path data-c="1D44F" d="M73 647Q73 657 77 670T89 683Q90 683 161 688T234 694Q246 694 246 685T212 542Q204 508 195 472T180 418L176 399Q176 396 182 402Q231 442 283 442Q345 442 383 396T422 280Q422 169 343 79T173 -11Q123 -11 82 27T40 150V159Q40 180 48 217T97 414Q147 611 147 623T109 637Q104 637 101 637H96Q86 637 83 637T76 640T73 647ZM336 325V331Q336 405 275 405Q258 405 240 397T207 376T181 352T163 330L157 322L136 236Q114 150 114 114Q114 66 138 42Q154 26 178 26Q211 26 245 58Q270 81 285 114T318 219Q336 291 336 325Z"></path></g><g data-mml-node="mi" transform="translate(462,-150) scale(0.707)"><path data-c="1D44E" d="M33 157Q33 258 109 349T280 441Q331 441 370 392Q386 422 416 422Q429 422 439 414T449 394Q449 381 412 234T374 68Q374 43 381 35T402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487Q506 153 506 144Q506 138 501 117T481 63T449 13Q436 0 417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157ZM351 328Q351 334 346 350T323 385T277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q217 26 254 59T298 110Q300 114 325 217T351 328Z"></path></g></g><g data-mml-node="mo" transform="translate(3668.1,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(4112.7,0)"><g data-mml-node="mi"><path data-c="1D44F" d="M73 647Q73 657 77 670T89 683Q90 683 161 688T234 694Q246 694 246 685T212 542Q204 508 195 472T180 418L176 399Q176 396 182 402Q231 442 283 442Q345 442 383 396T422 280Q422 169 343 79T173 -11Q123 -11 82 27T40 150V159Q40 180 48 217T97 414Q147 611 147 623T109 637Q104 637 101 637H96Q86 637 83 637T76 640T73 647ZM336 325V331Q336 405 275 405Q258 405 240 397T207 376T181 352T163 330L157 322L136 236Q114 150 114 114Q114 66 138 42Q154 26 178 26Q211 26 245 58Q270 81 285 114T318 219Q336 291 336 325Z"></path></g><g data-mml-node="mi" transform="translate(462,-150) scale(0.707)"><path data-c="1D454" d="M311 43Q296 30 267 15T206 0Q143 0 105 45T66 160Q66 265 143 353T314 442Q361 442 401 394L404 398Q406 401 409 404T418 412T431 419T447 422Q461 422 470 413T480 394Q480 379 423 152T363 -80Q345 -134 286 -169T151 -205Q10 -205 10 -137Q10 -111 28 -91T74 -71Q89 -71 102 -80T116 -111Q116 -121 114 -130T107 -144T99 -154T92 -162L90 -164H91Q101 -167 151 -167Q189 -167 211 -155Q234 -144 254 -122T282 -75Q288 -56 298 -13Q311 35 311 43ZM384 328L380 339Q377 350 375 354T369 368T359 382T346 393T328 402T306 405Q262 405 221 352Q191 313 171 233T151 117Q151 38 213 38Q269 38 323 108L331 118L384 328Z"></path></g></g></g></g></svg></mjx-container></span></li>
+<li>外参<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.576ex" xmlns="http://www.w3.org/2000/svg" width="5.054ex" height="2.508ex" role="img" focusable="false" viewBox="0 -853.7 2233.9 1108.5"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msubsup"><g data-mml-node="mi"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mi" transform="translate(536,363) scale(0.707)"><path data-c="1D44F" d="M73 647Q73 657 77 670T89 683Q90 683 161 688T234 694Q246 694 246 685T212 542Q204 508 195 472T180 418L176 399Q176 396 182 402Q231 442 283 442Q345 442 383 396T422 280Q422 169 343 79T173 -11Q123 -11 82 27T40 150V159Q40 180 48 217T97 414Q147 611 147 623T109 637Q104 637 101 637H96Q86 637 83 637T76 640T73 647ZM336 325V331Q336 405 275 405Q258 405 240 397T207 376T181 352T163 330L157 322L136 236Q114 150 114 114Q114 66 138 42Q154 26 178 26Q211 26 245 58Q270 81 285 114T318 219Q336 291 336 325Z"></path></g><g data-mml-node="mi" transform="translate(536,-247) scale(0.707)"><path data-c="1D450" d="M34 159Q34 268 120 355T306 442Q362 442 394 418T427 355Q427 326 408 306T360 285Q341 285 330 295T319 325T330 359T352 380T366 386H367Q367 388 361 392T340 400T306 404Q276 404 249 390Q228 381 206 359Q162 315 142 235T121 119Q121 73 147 50Q169 26 205 26H209Q321 26 394 111Q403 121 406 121Q410 121 419 112T429 98T420 83T391 55T346 25T282 0T202 -11Q127 -11 81 37T34 159Z"></path></g></g><g data-mml-node="mo" transform="translate(892.2,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msubsup" transform="translate(1336.8,0)"><g data-mml-node="mi"><path data-c="1D45E" d="M33 157Q33 258 109 349T280 441Q340 441 372 389Q373 390 377 395T388 406T404 418Q438 442 450 442Q454 442 457 439T460 434Q460 425 391 149Q320 -135 320 -139Q320 -147 365 -148H390Q396 -156 396 -157T393 -175Q389 -188 383 -194H370Q339 -192 262 -192Q234 -192 211 -192T174 -192T157 -193Q143 -193 143 -185Q143 -182 145 -170Q149 -154 152 -151T172 -148Q220 -148 230 -141Q238 -136 258 -53T279 32Q279 33 272 29Q224 -10 172 -10Q117 -10 75 30T33 157ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g data-mml-node="mi" transform="translate(543.7,363) scale(0.707)"><path data-c="1D44F" d="M73 647Q73 657 77 670T89 683Q90 683 161 688T234 694Q246 694 246 685T212 542Q204 508 195 472T180 418L176 399Q176 396 182 402Q231 442 283 442Q345 442 383 396T422 280Q422 169 343 79T173 -11Q123 -11 82 27T40 150V159Q40 180 48 217T97 414Q147 611 147 623T109 637Q104 637 101 637H96Q86 637 83 637T76 640T73 647ZM336 325V331Q336 405 275 405Q258 405 240 397T207 376T181 352T163 330L157 322L136 236Q114 150 114 114Q114 66 138 42Q154 26 178 26Q211 26 245 58Q270 81 285 114T318 219Q336 291 336 325Z"></path></g><g data-mml-node="mi" transform="translate(479,-247) scale(0.707)"><path data-c="1D450" d="M34 159Q34 268 120 355T306 442Q362 442 394 418T427 355Q427 326 408 306T360 285Q341 285 330 295T319 325T330 359T352 380T366 386H367Q367 388 361 392T340 400T306 404Q276 404 249 390Q228 381 206 359Q162 315 142 235T121 119Q121 73 147 50Q169 26 205 26H209Q321 26 394 111Q403 121 406 121Q410 121 419 112T429 98T420 83T391 55T346 25T282 0T202 -11Q127 -11 81 37T34 159Z"></path></g></g></g></g></svg></mjx-container></span></li>
+<li>所有特征点第一次被观测到时的逆深度值<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.027ex" xmlns="http://www.w3.org/2000/svg" width="1.319ex" height="1.597ex" role="img" focusable="false" viewBox="0 -694 583 706"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D706" d="M166 673Q166 685 183 694H202Q292 691 316 644Q322 629 373 486T474 207T524 67Q531 47 537 34T546 15T551 6T555 2T556 -2T550 -11H482Q457 3 450 18T399 152L354 277L340 262Q327 246 293 207T236 141Q211 112 174 69Q123 9 111 -1T83 -12Q47 -12 47 20Q47 37 61 52T199 187Q229 216 266 252T321 306L338 322Q338 323 288 462T234 612Q214 657 183 657Q166 657 166 673Z"></path></g></g></g></svg></mjx-container></span></li>
+</ul>
+<h5 id="最大后验估计的残差项">最大后验估计的残差项：</h5>
+<ul>
+<li>边缘化残差</li>
+<li>imu预积分残差</li>
+<li>重投影残差</li>
+</ul>
+<h2 id="vins_estimator">vins_estimator</h2>
+<h3 id="estimator_node">estimator_node</h3>
+<p>初始化、滑动窗口的ros节点，在接收特征点和imu数据时进行多线程加锁</p>
+<h5 id="函数">函数：</h5>
+<ul>
+<li>process() VIO主线程，在接受数据完成后会被唤醒，在提取measurements时互斥锁m_buf会锁住，此时无法接收数据</li>
+<li>predict() 从imu测量值imu_msg和上一个PVQ递推得到下一个tmp_Q，tmp_P，tmp_V，中值积分</li>
+<li>update() 调用predict()，对imu_buf中所有imu进行PVQ中值积分递推，得到当前帧imu更新项</li>
+<li>getMeasurements() 将imu与图像数据进行对齐并组合，返回组合后的测量数据</li>
+<li>imu_callback() imu回调函数，不停地压入imu_buf，在压入时进行加锁</li>
+<li>feature_callback() 特征点回调函数，不停地压入feature_buf，在压入时进行加锁</li>
+<li>restart_callback() 重定位回调函数</li>
+</ul>
+<h3 id="estimator">estimator</h3>
+<h5 id="变量">变量：</h5>
+<p>enum SolverFlag 求解标志位</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="asdleng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="asdleng">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2022/02/28/VINS2/" itemprop="url">VINS-Mono学习笔记2——feature_tracker</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-28T21:27:01+08:00">
+                2022-02-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>feature_tracker是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：</p>
+<ul>
+<li><p>对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪</p></li>
+<li>检测新的角点特征以保证每个图像特征的最小数目</li>
+<li>通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布</li>
+<li><p>利用基本矩阵模型的RANSAC算法进行外点剔除</p></li>
+</ul>
 <h2 id="feature_tracker">feature_tracker</h2>
 <h3 id="feature_tracker_node">feature_tracker_node</h3>
 <p>一个ros节点，订阅图像信息，发布特征点</p>
 <h5 id="变量">变量：</h5>
-<p><code>queue&lt;sensor_msgs::ImageConstPtr&gt; img_buf</code>图像帧buffer</p>
-<p><code>FeatureTracker trackerData[NUM_OF_CAM]</code>为每个相机（mono, stereo）创建一个<code>FeatureTracker</code>实例，即<code>trackerData[i]</code></p>
+<ul>
+<li><p><code>queue&lt;sensor_msgs::ImageConstPtr&gt; img_buf</code>图像帧buffer</p></li>
+<li><p><code>FeatureTracker trackerData[NUM_OF_CAM]</code>为每个相机（mono, stereo）创建一个<code>FeatureTracker</code>实例，即<code>trackerData[i]</code></p></li>
+</ul>
 <h5 id="函数">函数：</h5>
-<p>image_callback() 用于接收图像的回调函数，调用FeatureTracker::readImage()处理图像，然后将特征点封装成sensor_msgs::PointCloud发布出去</p>
+<ul>
+<li>image_callback() 用于接收图像的回调函数，调用FeatureTracker::readImage()处理图像，然后将特征点封装成sensor_msgs::PointCloud发布出去</li>
+</ul>
 <h3 id="feature_tracker.hfeature_tracker.cpp">feature_tracker.h/feature_tracker.cpp</h3>
 <p>里面有<code>FeatureTracker</code>类</p>
 <h4 id="class-featuretracker">class FeatureTracker</h4>
 <h5 id="变量-1">变量：</h5>
-<p><code>cv::Mat mask</code> 图像掩码</p>
-<p><code>cv::Mat fisheye_mask</code> 鱼眼相机掩码</p>
-<p><code>cv::Mat prev_img, cur_img, forw_img</code> 上一次发布的帧的图像数据，光流追踪前一帧的图像数据，光流追踪的后一帧的图像数据</p>
-<p><code>vector&lt;cv::Point2f&gt; n_pts</code> 每一帧中新提取的特征点</p>
-<p><code>vector&lt;cv::Point2f&gt; prev_pts, cur_pts, forw_pts</code> 上一次发布的帧的特征点，光流追踪前一帧的特征点，光流追踪后一帧的特征点</p>
-<p><code>vector&lt;cv::Point2f&gt; prev_un_pts, cur_un_pts</code> 归一化坐标系下的特征点坐标</p>
-<p><code>vector&lt;cv::Point2f&gt; pts_velocity</code> 当前帧相对前一帧特征点沿x,y方向的像素移动速度</p>
-<p><code>vector&lt;int&gt; ids</code> 能够被追踪到的特征点的id</p>
-<p><code>vector&lt;int&gt; track_cnt</code> 当前帧中每个特征点被追踪的次数</p>
-<p><code>map&lt;int, cv::Point2f&gt; cur_un_pts_map map&lt;int, cv::Point2f&gt; prev_un_pts_map</code>归一化坐标系下的特征点坐标组成的map</p>
-<p><code>camodocal::CameraPtr m_camera</code> 相机模型</p>
-<p><code>double cur_time</code> 当前帧时间</p>
-<p><code>double prev_time</code> 上一帧时间</p>
-<p><code>static int n_id</code> 特征点id，每检测到一个新的特征点，就将n_id作为该特征点的id，然后n_id加1</p>
+<ul>
+<li><p><code>cv::Mat mask</code> 图像掩码</p></li>
+<li><p><code>cv::Mat fisheye_mask</code> 鱼眼相机掩码</p></li>
+<li><p><code>cv::Mat prev_img, cur_img, forw_img</code> 上一次发布的帧的图像数据，光流追踪前一帧的图像数据，光流追踪的后一帧的图像数据</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; n_pts</code> 每一帧中新提取的特征点</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; prev_pts, cur_pts, forw_pts</code> 上一次发布的帧的特征点，光流追踪前一帧的特征点，光流追踪后一帧的特征点</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; prev_un_pts, cur_un_pts</code> 归一化坐标系下的特征点坐标</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; pts_velocity</code> 当前帧相对前一帧特征点沿x,y方向的像素移动速度</p></li>
+<li><p><code>vector&lt;int&gt; ids</code> 能够被追踪到的特征点的id</p></li>
+<li><p><code>vector&lt;int&gt; track_cnt</code> 当前帧中每个特征点被追踪的次数</p></li>
+<li><p><code>map&lt;int, cv::Point2f&gt; cur_un_pts_map map&lt;int, cv::Point2f&gt; prev_un_pts_map</code>归一化坐标系下的特征点坐标组成的map</p></li>
+<li><p><code>camodocal::CameraPtr m_camera</code> 相机模型</p></li>
+<li><p><code>double cur_time</code> 当前帧时间</p></li>
+<li><p><code>double prev_time</code> 上一帧时间</p></li>
+<li><p><code>static int n_id</code> 特征点id，每检测到一个新的特征点，就将n_id作为该特征点的id，然后n_id加1</p></li>
+</ul>
 <h5 id="函数-1">函数</h5>
-<p><code>bool inBorder()</code> 判断是否超出范围</p>
-<p><code>void readImage()</code>前端核心，特征点+光流跟踪，特征点下降到一定数量则进行新特征点提取，通过基础矩阵去除异常点，相邻特征点之间相隔30个像素，调用了opencv中的<code>cv::calcOpticalFlowPyrLK()</code>实现金字塔光流法，调用<code>cv::goodFeaturesToTrack()</code>提取shi-tomasi角点</p>
-<p><code>void setMask()</code> 对跟踪到的特征点，按照被追踪到的次数排序并从高到低去掉密集点，使用半径为30的mask，使特征点分布均匀</p>
-<p><code>void addPoints()</code> 添加新检测到的特征点n_pts</p>
-<p><code>bool updateID()</code> 更新特征点id</p>
-<p><code>void readIntrinsicParameter()</code> 读取相机内参</p>
-<p><code>void showUndistortion()</code> 显示去畸变矫正后的特征点</p>
-<p><code>void rejectWithF()</code> 求一遍本质矩阵，采用RANSAC算法去除异常点</p>
-<p><code>void undistortedPoints()</code> 对角点图像坐标去畸变矫正，并计算每个角点的速度</p>
+<ul>
+<li><p><code>bool inBorder()</code> 判断是否超出范围</p></li>
+<li><code>void readImage()</code>前端核心，特征点+光流跟踪，特征点下降到一定数量则进行新特征点提取，通过基础矩阵去除异常点，相邻特征点之间相隔30个像素，调用了opencv中的<code>cv::calcOpticalFlowPyrLK()</code>实现金字塔光流法，调用<code>cv::goodFeaturesToTrack()</code>提取shi-tomasi角点</li>
+<li><p><code>void setMask()</code> 对跟踪到的特征点，按照被追踪到的次数排序并从高到低去掉密集点，使用半径为30的mask，使特征点分布均匀</p></li>
+<li><p><code>void addPoints()</code> 添加新检测到的特征点n_pts</p></li>
+<li><p><code>bool updateID()</code> 更新特征点id</p></li>
+<li><p><code>void readIntrinsicParameter()</code> 读取相机内参</p></li>
+<li><p><code>void showUndistortion()</code> 显示去畸变矫正后的特征点</p></li>
+<li><p><code>void rejectWithF()</code> 求一遍本质矩阵，采用RANSAC算法去除异常点</p></li>
+<li><p><code>void undistortedPoints()</code> 对角点图像坐标去畸变矫正，并计算每个角点的速度</p></li>
+</ul>
 
           
         
@@ -529,7 +699,7 @@ mjx-container[display="true"] + br {
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-28T22:27:01+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-28T20:27:01+08:00">
                 2022-02-28
               </time>
             
@@ -920,7 +1090,7 @@ mjx-container[display="true"] + br {
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
