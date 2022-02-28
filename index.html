@@ -341,6 +341,141 @@ mjx-container[display="true"] + br {
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="asdleng">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2022/02/28/VINS1/" itemprop="url">VINS-Mono学习笔记1——概述</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-28T22:27:01+08:00">
+                2022-02-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>VINS-Mono是港科大秦通的杰作，是学习VIO的必读算法，本人依照论文代码和网上资料，在此记(zhai)录(chao)学习。</p>
+<h2 id="代码概述">代码概述</h2>
+<h3 id="ar_demo">ar_demo</h3>
+<p>一个增强现实demo</p>
+<h3 id="benchmark_publisher">benchmark_publisher</h3>
+<p>用于发布数据集的ground truth</p>
+<h3 id="camera_model">camera_model</h3>
+<p>相机模型，VINS-Mono的相机模型有针孔相机模型和鱼眼相机模型，还考虑了卷帘相机的情况</p>
+<h3 id="config">config</h3>
+<p>配置文件，包括话题、相机模型、相机内参、相机imu外参、imu噪声、求解器参数等等</p>
+<h3 id="feature_tracker">feature_tracker</h3>
+<p>VINS-Mono的前端，包括数据预处理、Shi-Tomasi角点提取、LK光流法特征跟踪，发布观测到的特征点信息</p>
+<h3 id="pose_graph">pose_graph</h3>
+<p>4Dof的位姿图优化、重定位等</p>
+<h3 id="vins_estimator">vins_estimator</h3>
+<p>VINS-Mono的核心内容，包括初始化和VIO紧耦合的滑动窗口非线性优化</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/20/444/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -757,7 +892,7 @@ mjx-container[display="true"] + br {
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
