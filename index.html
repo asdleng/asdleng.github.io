@@ -476,6 +476,163 @@ mjx-container[display="true"] + br {
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="asdleng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="asdleng">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2022/02/28/VINS2/" itemprop="url">VINS-Mono学习笔记2——feature_tracker</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-28T22:27:01+08:00">
+                2022-02-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本节主要内容包括：</p>
+<p>对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪； 检测新的角点特征以保证每个图像特征的最小数目； 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布； 利用基本矩阵模型的RANSAC算法进行外点剔除；</p>
+<h2 id="feature_tracker">feature_tracker</h2>
+<h3 id="feature_tracker_node">feature_tracker_node</h3>
+<p>一个ros节点，订阅图像信息，发布特征点</p>
+<h5 id="变量">变量：</h5>
+<p><code>queue&lt;sensor_msgs::ImageConstPtr&gt; img_buf</code>图像帧buffer</p>
+<p><code>FeatureTracker trackerData[NUM_OF_CAM]</code>为每个相机（mono, stereo）创建一个<code>FeatureTracker</code>实例，即<code>trackerData[i]</code></p>
+<h5 id="函数">函数：</h5>
+<p>image_callback() 用于接收图像的回调函数，调用FeatureTracker::readImage()处理图像，然后将特征点封装成sensor_msgs::PointCloud发布出去</p>
+<h3 id="feature_tracker.hfeature_tracker.cpp">feature_tracker.h/feature_tracker.cpp</h3>
+<p>里面有<code>FeatureTracker</code>类</p>
+<h4 id="class-featuretracker">class FeatureTracker</h4>
+<h5 id="变量-1">变量：</h5>
+<p><code>cv::Mat mask</code> 图像掩码</p>
+<p><code>cv::Mat fisheye_mask</code> 鱼眼相机掩码</p>
+<p><code>cv::Mat prev_img, cur_img, forw_img</code> 上一次发布的帧的图像数据，光流追踪前一帧的图像数据，光流追踪的后一帧的图像数据</p>
+<p><code>vector&lt;cv::Point2f&gt; n_pts</code> 每一帧中新提取的特征点</p>
+<p><code>vector&lt;cv::Point2f&gt; prev_pts, cur_pts, forw_pts</code> 上一次发布的帧的特征点，光流追踪前一帧的特征点，光流追踪后一帧的特征点</p>
+<p><code>vector&lt;cv::Point2f&gt; prev_un_pts, cur_un_pts</code> 归一化坐标系下的特征点坐标</p>
+<p><code>vector&lt;cv::Point2f&gt; pts_velocity</code> 当前帧相对前一帧特征点沿x,y方向的像素移动速度</p>
+<p><code>vector&lt;int&gt; ids</code> 能够被追踪到的特征点的id</p>
+<p><code>vector&lt;int&gt; track_cnt</code> 当前帧中每个特征点被追踪的次数</p>
+<p><code>map&lt;int, cv::Point2f&gt; cur_un_pts_map map&lt;int, cv::Point2f&gt; prev_un_pts_map</code>归一化坐标系下的特征点坐标组成的map</p>
+<p><code>camodocal::CameraPtr m_camera</code> 相机模型</p>
+<p><code>double cur_time</code> 当前帧时间</p>
+<p><code>double prev_time</code> 上一帧时间</p>
+<p><code>static int n_id</code> 特征点id，每检测到一个新的特征点，就将n_id作为该特征点的id，然后n_id加1</p>
+<h5 id="函数-1">函数</h5>
+<p><code>bool inBorder()</code> 判断是否超出范围</p>
+<p><code>void readImage()</code>前端核心，特征点+光流跟踪，特征点下降到一定数量则进行新特征点提取，通过基础矩阵去除异常点，相邻特征点之间相隔30个像素，调用了opencv中的<code>cv::calcOpticalFlowPyrLK()</code>实现金字塔光流法，调用<code>cv::goodFeaturesToTrack()</code>提取shi-tomasi角点</p>
+<p><code>void setMask()</code> 对跟踪到的特征点，按照被追踪到的次数排序并从高到低去掉密集点，使用半径为30的mask，使特征点分布均匀</p>
+<p><code>void addPoints()</code> 添加新检测到的特征点n_pts</p>
+<p><code>bool updateID()</code> 更新特征点id</p>
+<p><code>void readIntrinsicParameter()</code> 读取相机内参</p>
+<p><code>void showUndistortion()</code> 显示去畸变矫正后的特征点</p>
+<p><code>void rejectWithF()</code> 求一遍本质矩阵，采用RANSAC算法去除异常点</p>
+<p><code>void undistortedPoints()</code> 对角点图像坐标去畸变矫正，并计算每个角点的速度</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/20/444/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -896,7 +1053,7 @@ mjx-container[display="true"] + br {
               
                 <a href="/archives%20%7C%7C%20archives">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -920,9 +1077,9 @@ mjx-container[display="true"] + br {
                   </span>
                 
                   <span class="links-of-author-item">
-                    <a href="lengjianghao2006@163.com" target="_blank" title="E-Mail">
+                    <a href="mailto:lengjianghao2006@163.com" target="_blank" title="E-Mail">
                       
-                        <i class="fa fa-fw fa-globe"></i>E-Mail</a>
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
                   </span>
                 
             </div>

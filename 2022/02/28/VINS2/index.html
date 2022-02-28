@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="VINS-Mono是港科大秦通的杰作，是学习VIO的必读算法，本人依照论文代码和网上资料，在此记(zhai)录(chao)学习。 代码概述 ar_demo 一个增强现实demo benchmark_publisher 用于发布数据集的ground truth camera_model 相机模型，VINS-Mono的相机模型有针孔相机模型和鱼眼相机模型，还考虑了卷帘相机的情况 con">
+<meta name="description" content="本节主要内容包括： 对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪； 检测新的角点特征以保证每个图像特征的最小数目； 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布； 利用基本矩阵模型的RANSAC算法进行外点剔除； feature_tracker feature_tracker_node 一个ros节点，订阅图像信息，发布特征点 变量： queue&lt;sens">
 <meta property="og:type" content="article">
-<meta property="og:title" content="VINS-Mono学习笔记1——概述">
-<meta property="og:url" content="https://asdleng.github.io/2022/02/28/VINS1/index.html">
+<meta property="og:title" content="VINS-Mono学习笔记2——feature_tracker">
+<meta property="og:url" content="https://asdleng.github.io/2022/02/28/VINS2/index.html">
 <meta property="og:site_name" content="asdleng">
-<meta property="og:description" content="VINS-Mono是港科大秦通的杰作，是学习VIO的必读算法，本人依照论文代码和网上资料，在此记(zhai)录(chao)学习。 代码概述 ar_demo 一个增强现实demo benchmark_publisher 用于发布数据集的ground truth camera_model 相机模型，VINS-Mono的相机模型有针孔相机模型和鱼眼相机模型，还考虑了卷帘相机的情况 con">
+<meta property="og:description" content="本节主要内容包括： 对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪； 检测新的角点特征以保证每个图像特征的最小数目； 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布； 利用基本矩阵模型的RANSAC算法进行外点剔除； feature_tracker feature_tracker_node 一个ros节点，订阅图像信息，发布特征点 变量： queue&lt;sens">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-28T14:27:01.000Z">
-<meta property="article:modified_time" content="2022-02-28T07:32:25.841Z">
+<meta property="article:modified_time" content="2022-02-28T12:06:50.119Z">
 <meta property="article:author" content="asdleng">
 <meta name="twitter:card" content="summary">
 
@@ -119,13 +119,13 @@
 
 
 
-  <link rel="canonical" href="https://asdleng.github.io/2022/02/28/VINS1/"/>
+  <link rel="canonical" href="https://asdleng.github.io/2022/02/28/VINS2/"/>
 
 
 
 
 
-  <title>VINS-Mono学习笔记1——概述 | asdleng</title>
+  <title>VINS-Mono学习笔记2——feature_tracker | asdleng</title>
   
 
 
@@ -344,7 +344,7 @@ mjx-container[display="true"] + br {
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS1/">
+    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="asdleng">
@@ -361,7 +361,7 @@ mjx-container[display="true"] + br {
 
         
         
-          <h1 class="post-title" itemprop="name headline">VINS-Mono学习笔记1——概述</h1>
+          <h1 class="post-title" itemprop="name headline">VINS-Mono学习笔记2——feature_tracker</h1>
         
 
         <div class="post-meta">
@@ -411,22 +411,44 @@ mjx-container[display="true"] + br {
       
 
       
-        <p>VINS-Mono是港科大秦通的杰作，是学习VIO的必读算法，本人依照论文代码和网上资料，在此记(zhai)录(chao)学习。</p>
-<h2 id="代码概述">代码概述</h2>
-<h3 id="ar_demo">ar_demo</h3>
-<p>一个增强现实demo</p>
-<h3 id="benchmark_publisher">benchmark_publisher</h3>
-<p>用于发布数据集的ground truth</p>
-<h3 id="camera_model">camera_model</h3>
-<p>相机模型，VINS-Mono的相机模型有针孔相机模型和鱼眼相机模型，还考虑了卷帘相机的情况</p>
-<h3 id="config">config</h3>
-<p>配置文件，包括话题、相机模型、相机内参、相机imu外参、imu噪声、求解器参数等等</p>
-<h3 id="feature_tracker">feature_tracker</h3>
-<p>VINS-Mono的前端，包括数据预处理、Shi-Tomasi角点提取、LK光流法特征跟踪，发布观测到的特征点信息</p>
-<h3 id="pose_graph">pose_graph</h3>
-<p>4Dof的位姿图优化、重定位等</p>
-<h3 id="vins_estimator">vins_estimator</h3>
-<p>VINS-Mono的核心内容，包括初始化和VIO紧耦合的滑动窗口非线性优化</p>
+        <p>本节主要内容包括：</p>
+<p>对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪； 检测新的角点特征以保证每个图像特征的最小数目； 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布； 利用基本矩阵模型的RANSAC算法进行外点剔除；</p>
+<h2 id="feature_tracker">feature_tracker</h2>
+<h3 id="feature_tracker_node">feature_tracker_node</h3>
+<p>一个ros节点，订阅图像信息，发布特征点</p>
+<h5 id="变量">变量：</h5>
+<p><code>queue&lt;sensor_msgs::ImageConstPtr&gt; img_buf</code>图像帧buffer</p>
+<p><code>FeatureTracker trackerData[NUM_OF_CAM]</code>为每个相机（mono, stereo）创建一个<code>FeatureTracker</code>实例，即<code>trackerData[i]</code></p>
+<h5 id="函数">函数：</h5>
+<p>image_callback() 用于接收图像的回调函数，调用FeatureTracker::readImage()处理图像，然后将特征点封装成sensor_msgs::PointCloud发布出去</p>
+<h3 id="feature_tracker.hfeature_tracker.cpp">feature_tracker.h/feature_tracker.cpp</h3>
+<p>里面有<code>FeatureTracker</code>类</p>
+<h4 id="class-featuretracker">class FeatureTracker</h4>
+<h5 id="变量-1">变量：</h5>
+<p><code>cv::Mat mask</code> 图像掩码</p>
+<p><code>cv::Mat fisheye_mask</code> 鱼眼相机掩码</p>
+<p><code>cv::Mat prev_img, cur_img, forw_img</code> 上一次发布的帧的图像数据，光流追踪前一帧的图像数据，光流追踪的后一帧的图像数据</p>
+<p><code>vector&lt;cv::Point2f&gt; n_pts</code> 每一帧中新提取的特征点</p>
+<p><code>vector&lt;cv::Point2f&gt; prev_pts, cur_pts, forw_pts</code> 上一次发布的帧的特征点，光流追踪前一帧的特征点，光流追踪后一帧的特征点</p>
+<p><code>vector&lt;cv::Point2f&gt; prev_un_pts, cur_un_pts</code> 归一化坐标系下的特征点坐标</p>
+<p><code>vector&lt;cv::Point2f&gt; pts_velocity</code> 当前帧相对前一帧特征点沿x,y方向的像素移动速度</p>
+<p><code>vector&lt;int&gt; ids</code> 能够被追踪到的特征点的id</p>
+<p><code>vector&lt;int&gt; track_cnt</code> 当前帧中每个特征点被追踪的次数</p>
+<p><code>map&lt;int, cv::Point2f&gt; cur_un_pts_map map&lt;int, cv::Point2f&gt; prev_un_pts_map</code>归一化坐标系下的特征点坐标组成的map</p>
+<p><code>camodocal::CameraPtr m_camera</code> 相机模型</p>
+<p><code>double cur_time</code> 当前帧时间</p>
+<p><code>double prev_time</code> 上一帧时间</p>
+<p><code>static int n_id</code> 特征点id，每检测到一个新的特征点，就将n_id作为该特征点的id，然后n_id加1</p>
+<h5 id="函数-1">函数</h5>
+<p><code>bool inBorder()</code> 判断是否超出范围</p>
+<p><code>void readImage()</code>前端核心，特征点+光流跟踪，特征点下降到一定数量则进行新特征点提取，通过基础矩阵去除异常点，相邻特征点之间相隔30个像素，调用了opencv中的<code>cv::calcOpticalFlowPyrLK()</code>实现金字塔光流法，调用<code>cv::goodFeaturesToTrack()</code>提取shi-tomasi角点</p>
+<p><code>void setMask()</code> 对跟踪到的特征点，按照被追踪到的次数排序并从高到低去掉密集点，使用半径为30的mask，使特征点分布均匀</p>
+<p><code>void addPoints()</code> 添加新检测到的特征点n_pts</p>
+<p><code>bool updateID()</code> 更新特征点id</p>
+<p><code>void readIntrinsicParameter()</code> 读取相机内参</p>
+<p><code>void showUndistortion()</code> 显示去畸变矫正后的特征点</p>
+<p><code>void rejectWithF()</code> 求一遍本质矩阵，采用RANSAC算法去除异常点</p>
+<p><code>void undistortedPoints()</code> 对角点图像坐标去畸变矫正，并计算每个角点的速度</p>
 
       
     </div>
@@ -480,8 +502,8 @@ mjx-container[display="true"] + br {
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2022/02/28/VINS2/" rel="next" title="VINS-Mono学习笔记2——feature_tracker">
-                <i class="fa fa-chevron-left"></i> VINS-Mono学习笔记2——feature_tracker
+              <a href="/2022/02/20/444/" rel="next" title="想法">
+                <i class="fa fa-chevron-left"></i> 想法
               </a>
             
           </div>
@@ -489,6 +511,10 @@ mjx-container[display="true"] + br {
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2022/02/28/VINS1/" rel="prev" title="VINS-Mono学习笔记1——概述">
+                VINS-Mono学习笔记1——概述 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -622,7 +648,7 @@ mjx-container[display="true"] + br {
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">代码概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ar_demo"><span class="nav-number">1.1.</span> <span class="nav-text">ar_demo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#benchmark_publisher"><span class="nav-number">1.2.</span> <span class="nav-text">benchmark_publisher</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#camera_model"><span class="nav-number">1.3.</span> <span class="nav-text">camera_model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#config"><span class="nav-number">1.4.</span> <span class="nav-text">config</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#feature_tracker"><span class="nav-number">1.5.</span> <span class="nav-text">feature_tracker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pose_graph"><span class="nav-number">1.6.</span> <span class="nav-text">pose_graph</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vins_estimator"><span class="nav-number">1.7.</span> <span class="nav-text">vins_estimator</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#feature_tracker"><span class="nav-number">1.</span> <span class="nav-text">feature_tracker</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#feature_tracker_node"><span class="nav-number">1.1.</span> <span class="nav-text">feature_tracker_node</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">变量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">函数：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#feature_tracker.hfeature_tracker.cpp"><span class="nav-number">1.2.</span> <span class="nav-text">feature_tracker.h&#x2F;feature_tracker.cpp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#class-featuretracker"><span class="nav-number">1.2.1.</span> <span class="nav-text">class FeatureTracker</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F-1"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">变量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-1"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">函数</span></a></li></ol></li></ol></li></ol></li></ol></div>
             
 
           </div>
