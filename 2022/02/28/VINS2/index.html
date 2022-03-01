@@ -79,15 +79,15 @@
 
 
 
-<meta name="description" content="feature_tracker是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：  对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪 检测新的角点特征以保证每个图像特征的最小数目 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布 利用基本矩阵模型的RANSAC算法进行外点剔除  feature_tracker featur">
+<meta name="description" content="feature_tracker是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：  对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪 检测新的角点特征以保证每个图像特征的最小数目 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布 利用基本矩阵模型的RANSAC算法进行外点剔除  feature_tracker feat">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VINS-Mono学习笔记2——feature_tracker">
 <meta property="og:url" content="https://asdleng.github.io/2022/02/28/VINS2/index.html">
 <meta property="og:site_name" content="asdleng">
-<meta property="og:description" content="feature_tracker是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：  对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪 检测新的角点特征以保证每个图像特征的最小数目 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布 利用基本矩阵模型的RANSAC算法进行外点剔除  feature_tracker featur">
+<meta property="og:description" content="feature_tracker是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：  对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪 检测新的角点特征以保证每个图像特征的最小数目 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布 利用基本矩阵模型的RANSAC算法进行外点剔除  feature_tracker feat">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-28T13:27:01.000Z">
-<meta property="article:modified_time" content="2022-03-01T05:04:04.741Z">
+<meta property="article:modified_time" content="2022-03-01T05:20:35.771Z">
 <meta property="article:author" content="asdleng">
 <meta name="twitter:card" content="summary">
 
@@ -411,7 +411,8 @@ mjx-container[display="true"] + br {
       
 
       
-        <p><strong>feature_tracker</strong>是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：</p>
+        <span id="more"></span>
+<p><strong>feature_tracker</strong>是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：</p>
 <ul>
 <li><p>对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪</p></li>
 <li>检测新的角点特征以保证每个图像特征的最小数目</li>
