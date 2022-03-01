@@ -87,7 +87,7 @@
 <meta property="og:description" content="feature_tracker是VINS-Mono的前端，其主要调用了opencv库里的特征点提取和追踪函数，主要内容包括：  对于每一幅新图像，KLT稀疏光流算法对现有特征进行跟踪 检测新的角点特征以保证每个图像特征的最小数目 通过设置两个相邻特征之间像素的最小间隔来执行均匀的特征分布 利用基本矩阵模型的RANSAC算法进行外点剔除  feature_tracker featur">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-28T13:27:01.000Z">
-<meta property="article:modified_time" content="2022-02-28T14:03:01.918Z">
+<meta property="article:modified_time" content="2022-03-01T05:04:04.741Z">
 <meta property="article:author" content="asdleng">
 <meta name="twitter:card" content="summary">
 
@@ -435,32 +435,55 @@ mjx-container[display="true"] + br {
 <h4 id="class-featuretracker">class FeatureTracker</h4>
 <h5 id="变量-1">变量：</h5>
 <ul>
-<li><p><code>cv::Mat mask</code> 图像掩码</p></li>
-<li><p><code>cv::Mat fisheye_mask</code> 鱼眼相机掩码</p></li>
-<li><p><code>cv::Mat prev_img, cur_img, forw_img</code> 上一次发布的帧的图像数据，光流追踪前一帧的图像数据，光流追踪的后一帧的图像数据</p></li>
-<li><p><code>vector&lt;cv::Point2f&gt; n_pts</code> 每一帧中新提取的特征点</p></li>
-<li><p><code>vector&lt;cv::Point2f&gt; prev_pts, cur_pts, forw_pts</code> 上一次发布的帧的特征点，光流追踪前一帧的特征点，光流追踪后一帧的特征点</p></li>
-<li><p><code>vector&lt;cv::Point2f&gt; prev_un_pts, cur_un_pts</code> 归一化坐标系下的特征点坐标</p></li>
-<li><p><code>vector&lt;cv::Point2f&gt; pts_velocity</code> 当前帧相对前一帧特征点沿x,y方向的像素移动速度</p></li>
-<li><p><code>vector&lt;int&gt; ids</code> 能够被追踪到的特征点的id</p></li>
-<li><p><code>vector&lt;int&gt; track_cnt</code> 当前帧中每个特征点被追踪的次数</p></li>
-<li><p><code>map&lt;int, cv::Point2f&gt; cur_un_pts_map map&lt;int, cv::Point2f&gt; prev_un_pts_map</code> 归一化坐标系下的特征点坐标组成的map</p></li>
-<li><p><code>camodocal::CameraPtr m_camera</code> 相机模型</p></li>
-<li><p><code>double cur_time</code> 当前帧时间</p></li>
-<li><p><code>double prev_time</code> 上一帧时间</p></li>
-<li><p><code>static int n_id</code> 特征点id，每检测到一个新的特征点，就将n_id作为该特征点的id，然后n_id加1</p></li>
+<li><p><code>cv::Mat mask</code><br>
+图像掩码</p></li>
+<li><p><code>cv::Mat fisheye_mask</code><br>
+鱼眼相机掩码</p></li>
+<li><p><code>cv::Mat prev_img, cur_img, forw_img</code><br>
+上一次发布的帧的图像数据，光流追踪前一帧的图像数据，光流追踪的后一帧的图像数据</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; n_pts</code><br>
+每一帧中新提取的特征点</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; prev_pts, cur_pts, forw_pts</code><br>
+上一次发布的帧的特征点，光流追踪前一帧的特征点，光流追踪后一帧的特征点</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; prev_un_pts, cur_un_pts</code><br>
+归一化坐标系下的特征点坐标</p></li>
+<li><p><code>vector&lt;cv::Point2f&gt; pts_velocity</code><br>
+当前帧相对前一帧特征点沿x,y方向的像素移动速度</p></li>
+<li><p><code>vector&lt;int&gt; ids</code><br>
+能够被追踪到的特征点的id</p></li>
+<li><p><code>vector&lt;int&gt; track_cnt</code><br>
+当前帧中每个特征点被追踪的次数</p></li>
+<li><p><code>map&lt;int, cv::Point2f&gt; cur_un_pts_map map&lt;int, cv::Point2f&gt; prev_un_pts_map</code><br>
+归一化坐标系下的特征点坐标组成的map</p></li>
+<li><p><code>camodocal::CameraPtr m_camera</code><br>
+相机模型</p></li>
+<li><p><code>double cur_time</code><br>
+当前帧时间</p></li>
+<li><p><code>double prev_time</code><br>
+上一帧时间</p></li>
+<li><p><code>static int n_id</code><br>
+特征点id，每检测到一个新的特征点，就将n_id作为该特征点的id，然后n_id加1</p></li>
 </ul>
 <h5 id="函数-1">函数</h5>
 <ul>
-<li><p><code>bool inBorder()</code> 判断是否超出范围</p></li>
-<li><code>void readImage()</code> 前端核心，特征点+光流跟踪，特征点下降到一定数量则进行新特征点提取，通过基础矩阵去除异常点，相邻特征点之间相隔30个像素，调用了opencv中的<code>cv::calcOpticalFlowPyrLK()</code>实现金字塔光流法，调用<code>cv::goodFeaturesToTrack()</code>提取shi-tomasi角点</li>
-<li><p><code>void setMask()</code> 对跟踪到的特征点，按照被追踪到的次数排序并从高到低去掉密集点，使用半径为30的mask，使特征点分布均匀</p></li>
-<li><p><code>void addPoints()</code> 添加新检测到的特征点n_pts</p></li>
-<li><p><code>bool updateID()</code> 更新特征点id</p></li>
-<li><p><code>void readIntrinsicParameter()</code> 读取相机内参</p></li>
-<li><p><code>void showUndistortion()</code> 显示去畸变矫正后的特征点</p></li>
-<li><p><code>void rejectWithF()</code> 求一遍本质矩阵，采用RANSAC算法去除异常点</p></li>
-<li><p><code>void undistortedPoints()</code> 对角点图像坐标去畸变矫正，并计算每个角点的速度</p></li>
+<li><p><code>bool inBorder()</code><br>
+判断是否超出范围</p></li>
+<li><code>void readImage()</code><br>
+前端核心，特征点+光流跟踪，特征点下降到一定数量则进行新特征点提取，通过基础矩阵去除异常点，相邻特征点之间相隔30个像素，调用了opencv中的<code>cv::calcOpticalFlowPyrLK()</code>实现金字塔光流法，调用<code>cv::goodFeaturesToTrack()</code>提取shi-tomasi角点</li>
+<li><p><code>void setMask()</code><br>
+对跟踪到的特征点，按照被追踪到的次数排序并从高到低去掉密集点，使用半径为30的mask，使特征点分布均匀</p></li>
+<li><p><code>void addPoints()</code><br>
+添加新检测到的特征点n_pts</p></li>
+<li><p><code>bool updateID()</code><br>
+更新特征点id</p></li>
+<li><p><code>void readIntrinsicParameter()</code><br>
+读取相机内参</p></li>
+<li><p><code>void showUndistortion()</code><br>
+显示去畸变矫正后的特征点</p></li>
+<li><p><code>void rejectWithF()</code><br>
+求一遍本质矩阵，采用RANSAC算法去除异常点</p></li>
+<li><p><code>void undistortedPoints()</code><br>
+对角点图像坐标去畸变矫正，并计算每个角点的速度</p></li>
 </ul>
 
       
