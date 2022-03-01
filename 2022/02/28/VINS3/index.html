@@ -87,7 +87,7 @@
 <meta property="og:description" content="estimator是VINS-Mono的核心模块，其主要内容包括了VINS的初始化、紧耦合的滑动窗口非线性优化、关键帧选择 初始化过程的参数和步骤(按初始化顺序)：  陀螺仪bias SfM每一帧的速度，重力向量，尺度因子 Gravity Refifinement，根据这一特点，对重力方向再进行优化 以启动瞬间的位置为原点，重力方向为z轴负向，把所有初始化的参数旋转到该坐标系下，对">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-28T14:27:01.000Z">
-<meta property="article:modified_time" content="2022-03-01T05:19:54.614Z">
+<meta property="article:modified_time" content="2022-03-01T06:44:52.196Z">
 <meta property="article:author" content="asdleng">
 <meta name="twitter:card" content="summary">
 
@@ -546,7 +546,125 @@ imu预积分对象，用于临时存放imu数据写入pre_integrations</li>
 </ul>
 <h5 id="函数-1">函数：</h5>
 <ul>
-<li></li>
+<li><code>processIMU()</code><br>
+计算加速度角速度，把每一帧的imu测量信息加到imu预积分实例数组<code>pre_itergrations[]</code>里，同时得到每一帧的<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.439ex" xmlns="http://www.w3.org/2000/svg" width="9.964ex" height="2.032ex" role="img" focusable="false" viewBox="0 -704 4404 898"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D443" d="M287 628Q287 635 230 637Q206 637 199 638T192 648Q192 649 194 659Q200 679 203 681T397 683Q587 682 600 680Q664 669 707 631T751 530Q751 453 685 389Q616 321 507 303Q500 302 402 301H307L277 182Q247 66 247 59Q247 55 248 54T255 50T272 48T305 46H336Q342 37 342 35Q342 19 335 5Q330 0 319 0Q316 0 282 1T182 2Q120 2 87 2T51 1Q33 1 33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM645 554Q645 567 643 575T634 597T609 619T560 635Q553 636 480 637Q463 637 445 637T416 636T404 636Q391 635 386 627Q384 621 367 550T332 412T314 344Q314 342 395 342H407H430Q542 342 590 392Q617 419 631 471T645 554Z"></path></g><g data-mml-node="mo" transform="translate(751,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(1195.7,0)"><path data-c="1D449" d="M52 648Q52 670 65 683H76Q118 680 181 680Q299 680 320 683H330Q336 677 336 674T334 656Q329 641 325 637H304Q282 635 274 635Q245 630 242 620Q242 618 271 369T301 118L374 235Q447 352 520 471T595 594Q599 601 599 609Q599 633 555 637Q537 637 537 648Q537 649 539 661Q542 675 545 679T558 683Q560 683 570 683T604 682T668 681Q737 681 755 683H762Q769 676 769 672Q769 655 760 640Q757 637 743 637Q730 636 719 635T698 630T682 623T670 615T660 608T652 599T645 592L452 282Q272 -9 266 -16Q263 -18 259 -21L241 -22H234Q216 -22 216 -15Q213 -9 177 305Q139 623 138 626Q133 637 76 637H59Q52 642 52 648Z"></path></g><g data-mml-node="mo" transform="translate(1964.7,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(2409.3,0)"><path data-c="1D444" d="M399 -80Q399 -47 400 -30T402 -11V-7L387 -11Q341 -22 303 -22Q208 -22 138 35T51 201Q50 209 50 244Q50 346 98 438T227 601Q351 704 476 704Q514 704 524 703Q621 689 680 617T740 435Q740 255 592 107Q529 47 461 16L444 8V3Q444 2 449 -24T470 -66T516 -82Q551 -82 583 -60T625 -3Q631 11 638 11Q647 11 649 2Q649 -6 639 -34T611 -100T557 -165T481 -194Q399 -194 399 -87V-80ZM636 468Q636 523 621 564T580 625T530 655T477 665Q429 665 379 640Q277 591 215 464T153 216Q153 110 207 59Q231 38 236 38V46Q236 86 269 120T347 155Q372 155 390 144T417 114T429 82T435 55L448 64Q512 108 557 185T619 334T636 468ZM314 18Q362 18 404 39L403 49Q399 104 366 115Q354 117 347 117Q344 117 341 117T337 118Q317 118 296 98T274 52Q274 18 314 18Z"></path></g><g data-mml-node="mo" transform="translate(3200.3,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(3645,0)"><path data-c="1D445" d="M230 637Q203 637 198 638T193 649Q193 676 204 682Q206 683 378 683Q550 682 564 680Q620 672 658 652T712 606T733 563T739 529Q739 484 710 445T643 385T576 351T538 338L545 333Q612 295 612 223Q612 212 607 162T602 80V71Q602 53 603 43T614 25T640 16Q668 16 686 38T712 85Q717 99 720 102T735 105Q755 105 755 93Q755 75 731 36Q693 -21 641 -21H632Q571 -21 531 4T487 82Q487 109 502 166T517 239Q517 290 474 313Q459 320 449 321T378 323H309L277 193Q244 61 244 59Q244 55 245 54T252 50T269 48T302 46H333Q339 38 339 37T336 19Q332 6 326 0H311Q275 2 180 2Q146 2 117 2T71 2T50 1Q33 1 33 10Q33 12 36 24Q41 43 46 45Q50 46 61 46H67Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628Q287 635 230 637ZM630 554Q630 586 609 608T523 636Q521 636 500 636T462 637H440Q393 637 386 627Q385 624 352 494T319 361Q319 360 388 360Q466 361 492 367Q556 377 592 426Q608 449 619 486T630 554Z"></path></g></g></g></svg></mjx-container></span></li>
+<li><code>processImage()</code><br>
+初始化，判断是否关键帧，进行外参标定，滑动窗口非线性优化，调用的函数包括：</li>
+<li><code>FeatureManager::addFeatureCheckParallax()</code></li>
+<li><code>FeatureManager::getFeatureCount()</code></li>
+<li><code>FeatureManager::getCorresponding()</code></li>
+<li><code>Estimator::solveOdometry()</code></li>
+<li><code>Estimator::slideWindow()</code></li>
+<li><code>FeatureManager::removeFailures()</code></li>
+<li><p><code>Estimator::initialStructure()</code></p></li>
+<li><code>initialStructure()</code><br>
+视觉结构初始化，用方差判断imu激励是否足够，由基础矩阵得到的R、t作为初始值，恢复滑动窗口帧的位姿，然后进行视觉惯性联合初始化，调用的函数包括：</li>
+<li><code>Estimator::relativePose()</code></li>
+<li><code>GlobalSFM::construct()</code></li>
+<li><p><code>Estimator::visualInitialAlign()</code></p></li>
+<li><code>visualInitialAlign()</code><br>
+得到尺度s和重力g后，更新所有图像帧在世界坐标系下的Ps、Rs、Vs</li>
+<li><code>relativePose()</code><br>
+判断两帧有足够视差30且内点数目大于12则可进行初始化，同时得到<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.048ex" xmlns="http://www.w3.org/2000/svg" width="1.717ex" height="1.593ex" role="img" focusable="false" viewBox="0 -683 759 704"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D445" d="M230 637Q203 637 198 638T193 649Q193 676 204 682Q206 683 378 683Q550 682 564 680Q620 672 658 652T712 606T733 563T739 529Q739 484 710 445T643 385T576 351T538 338L545 333Q612 295 612 223Q612 212 607 162T602 80V71Q602 53 603 43T614 25T640 16Q668 16 686 38T712 85Q717 99 720 102T735 105Q755 105 755 93Q755 75 731 36Q693 -21 641 -21H632Q571 -21 531 4T487 82Q487 109 502 166T517 239Q517 290 474 313Q459 320 449 321T378 323H309L277 193Q244 61 244 59Q244 55 245 54T252 50T269 48T302 46H333Q339 38 339 37T336 19Q332 6 326 0H311Q275 2 180 2Q146 2 117 2T71 2T50 1Q33 1 33 10Q33 12 36 24Q41 43 46 45Q50 46 61 46H67Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628Q287 635 230 637ZM630 554Q630 586 609 608T523 636Q521 636 500 636T462 637H440Q393 637 386 627Q385 624 352 494T319 361Q319 360 388 360Q466 361 492 367Q556 377 592 426Q608 449 619 486T630 554Z"></path></g></g></g></svg></mjx-container></span>和<span class="math inline"><mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: 0" xmlns="http://www.w3.org/2000/svg" width="1.593ex" height="1.532ex" role="img" focusable="false" viewBox="0 -677 704 677"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D447" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path></g></g></g></svg></mjx-container></span></li>
+<li><code>solveOdometry()</code><br>
+三角化所有特征点深度，并进行非线性优化，调用的函数有：</li>
+<li><code>FeatureManager::trangulate()</code></li>
+<li><p><code>Estimator::optimization()</code></p></li>
+<li><code>optimization()</code><br>
+非线性优化，核心函数</li>
+<li><code>slideWindow()</code><br>
+实现滑动窗口，如果次新帧是关键帧，则边缘化最老帧，如果次新帧不是关键帧，则舍弃次新帧视觉保留imu</li>
+<li><code>slideWindowOld()</code><br>
+滑动窗口边缘化最老帧时处理特征点被观测的帧号</li>
+<li><code>slideWindowNew()</code><br>
+滑动窗口边缘化次新帧时处理特征点被观测的帧号</li>
+<li><code>vector2double()</code><br>
+vector转换成double数组，因为Ceres使用数值数组，Ps、Rs转变成para_Pose，Vs、Bas、Bgs转变成para_SpeedBias</li>
+<li><code>double2vector()</code><br>
+数据转换，vector2double的相反过程，同时这里为防止优化结果往零空间变化，会根据优化前后第一帧的位姿差进行修正</li>
+<li><code>failureDetection()</code><br>
+系统故障检测，特征太少、偏置过大、旋转过大</li>
+<li><p><code>setReloFrame()</code><br>
+重定位</p></li>
+</ul>
+<h3 id="feature_manager.hfeature_manager.cpp">feature_manager.h/feature_manager.cpp</h3>
+<p>里面有FeaturePerFrame类、FeaturePerId类、FeatureManager类</p>
+<h4 id="class-featureperframe">class FeaturePerFrame</h4>
+<p>每个特征点在一张图像中的信息</p>
+<h5 id="变量-1">变量：</h5>
+<ul>
+<li><code>cur_td</code><br>
+当前帧imu相机时间差</li>
+<li><code>Vector3d point</code><br>
+当前帧相机坐标系下特征点归一化3d坐标</li>
+<li><code>Vector2d uv</code><br>
+当前帧特征点像素坐标</li>
+<li><code>Vector2d velocity</code><br>
+当前帧特征点像素的速度</li>
+</ul>
+<h4 id="class-featureperid">class FeaturePerId</h4>
+<p>特征类，每个特征点由多个连续图像观测到</p>
+<h5 id="变量-2">变量：</h5>
+<ul>
+<li><code>const int feature_id</code><br>
+特征点的id索引</li>
+<li><code>int start_frame</code><br>
+该特征点第一次被追踪的帧在滑动窗口中的id</li>
+<li><code>vector&lt;FeaturePerFrame&gt; feature_per_frame</code><br>
+特征点被哪些帧追踪到的vector容器</li>
+<li><code>int used_num</code><br>
+该特征点被追踪到的次数</li>
+<li><code>bool is_outlier</code><br>
+是否是异常点</li>
+<li><code>estimated_depth</code><br>
+该特征点被估计的逆深度</li>
+<li><code>solve_flag</code><br>
+逆深度估计是否成功</li>
+</ul>
+<h5 id="函数-2">函数：</h5>
+<ul>
+<li><code>endFrame()</code><br>
+返回该特征点丢失时的帧在滑动窗口中的id</li>
+</ul>
+<h4 id="class-featuremanager">class FeatureManager</h4>
+<p>特征管理器类，里面有list容器管理所有特征</p>
+<h5 id="变量-3">变量：</h5>
+<ul>
+<li><code>list&lt;FeaturePerId&gt; feature</code><br>
+滑动窗口内所有特征点</li>
+<li><code>int last_track_num</code><br>
+上一帧图像追踪到的特征点个数</li>
+<li><code>const Matrix3d *Rs</code><br>
+滑动窗口中所有图像帧的旋转矩阵</li>
+</ul>
+<h5 id="函数-3">函数：</h5>
+<ul>
+<li><code>setRic()</code><br>
+设置 ric</li>
+<li><code>clearState()</code><br>
+清空</li>
+<li><code>getFeatureCount()</code><br>
+返回窗口中特征点总个数</li>
+<li><code>addFeatureCheckParallax()</code><br>
+把特征点放入feature的list容器中，计算每一个点跟踪次数和它在次新帧和次次新帧间的视差，返回是否是关键帧</li>
+<li><code>getCorresponding()</code><br>
+返回两帧之间对应的特征点的归一化3d点pair坐标</li>
+<li><code>setDepth()</code><br>
+设置所有特征点逆深度值</li>
+<li><code>removeFailures()</code><br>
+删除估计逆深度失败的点</li>
+<li><code>clearDepth()</code></li>
+<li><code>getDepthVector</code></li>
+<li><code>triangulate()</code><br>
+对特征点进行三角化求深度（SVD分解）对应VIO课前端三角化一节</li>
+<li><code>removeBackShiftDepth()</code><br>
+边缘化最老帧时，处理特征点保存的帧号，将起始帧是最老帧的特征点的深度值进行转移</li>
+<li><code>removeBack()</code><br>
+边缘化最老帧时，直接将特征点所保存的帧号向前滑动</li>
+<li><code>removeFront()</code><br>
+边缘化次新帧时，对特征点在次新帧的信息进行移除处理</li>
+<li><code>removeOutlier()</code><br>
+移除异常点</li>
 </ul>
 
       
@@ -743,7 +861,7 @@ imu预积分对象，用于临时存放imu数据写入pre_integrations</li>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E8%BF%87%E7%A8%8B%E7%9A%84%E5%8F%82%E6%95%B0%E5%92%8C%E6%AD%A5%E9%AA%A4%E6%8C%89%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F"><span class="nav-number">1.</span> <span class="nav-text">初始化过程的参数和步骤(按初始化顺序)：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%BC%98%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">非线性滑动窗口优化：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%90%91%E9%87%8F"><span class="nav-number">2.1.</span> <span class="nav-text">状态向量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%80%E5%A4%A7%E5%90%8E%E9%AA%8C%E4%BC%B0%E8%AE%A1%E7%9A%84%E6%AE%8B%E5%B7%AE%E9%A1%B9"><span class="nav-number">2.2.</span> <span class="nav-text">最大后验估计的残差项：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vins_estimator"><span class="nav-number"></span> <span class="nav-text">vins_estimator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#estimator_node"><span class="nav-number"></span> <span class="nav-text">estimator_node</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">0.1.</span> <span class="nav-text">函数：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#estimator.hestimator.cpp"><span class="nav-number"></span> <span class="nav-text">estimator.h&#x2F;estimator.cpp</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">0.1.</span> <span class="nav-text">变量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-1"><span class="nav-number">0.2.</span> <span class="nav-text">函数：</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E8%BF%87%E7%A8%8B%E7%9A%84%E5%8F%82%E6%95%B0%E5%92%8C%E6%AD%A5%E9%AA%A4%E6%8C%89%E5%88%9D%E5%A7%8B%E5%8C%96%E9%A1%BA%E5%BA%8F"><span class="nav-number">1.</span> <span class="nav-text">初始化过程的参数和步骤(按初始化顺序)：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E4%BC%98%E5%8C%96"><span class="nav-number">2.</span> <span class="nav-text">非线性滑动窗口优化：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E5%90%91%E9%87%8F"><span class="nav-number">2.1.</span> <span class="nav-text">状态向量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%9C%80%E5%A4%A7%E5%90%8E%E9%AA%8C%E4%BC%B0%E8%AE%A1%E7%9A%84%E6%AE%8B%E5%B7%AE%E9%A1%B9"><span class="nav-number">2.2.</span> <span class="nav-text">最大后验估计的残差项：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vins_estimator"><span class="nav-number"></span> <span class="nav-text">vins_estimator</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#estimator_node"><span class="nav-number"></span> <span class="nav-text">estimator_node</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">0.1.</span> <span class="nav-text">函数：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#estimator.hestimator.cpp"><span class="nav-number"></span> <span class="nav-text">estimator.h&#x2F;estimator.cpp</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">0.1.</span> <span class="nav-text">变量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-1"><span class="nav-number">0.2.</span> <span class="nav-text">函数：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#feature_manager.hfeature_manager.cpp"><span class="nav-number"></span> <span class="nav-text">feature_manager.h&#x2F;feature_manager.cpp</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#class-featureperframe"><span class="nav-number">1.</span> <span class="nav-text">class FeaturePerFrame</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F-1"><span class="nav-number">1.1.</span> <span class="nav-text">变量：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#class-featureperid"><span class="nav-number">2.</span> <span class="nav-text">class FeaturePerId</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F-2"><span class="nav-number">2.1.</span> <span class="nav-text">变量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-2"><span class="nav-number">2.2.</span> <span class="nav-text">函数：</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#class-featuremanager"><span class="nav-number">3.</span> <span class="nav-text">class FeatureManager</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%98%E9%87%8F-3"><span class="nav-number">3.1.</span> <span class="nav-text">变量：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%87%BD%E6%95%B0-3"><span class="nav-number">3.2.</span> <span class="nav-text">函数：</span></a></li></ol></li></ol></div>
             
 
           </div>
