@@ -341,6 +341,140 @@ mjx-container[display="true"] + br {
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/03/25/VINS4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="asdleng">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/uploads/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="asdleng">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2022/03/25/VINS4/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-03-25T14:47:47+08:00">
+                2022-03-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>对Vins-Mono中的Ceres库的基本用法进行了整理</p>
+<p>Ceres是谷歌开发的一个求解非线性最小二乘的开源C++库，Vins-Mono中使用Ceres进行优化的基本内容包括：</p>
+<ul>
+<li>创建一个<code>ceres::Problem</code>类型的实例<code>problem</code></li>
+<li>创建所有<code>Factor</code>类，包括<code>IMUFactor</code>、<code>marginalization_factor</code>、<code>projection_factor</code>、<code>projection_td_factor</code>，它们继承自<code>ceres::SizedCostFunction</code>类或<code>ceres::CostFunction</code>类</li>
+<li>在所有<code>Factor</code>类中重写<code>Evaluate()</code>函数，输入为优化变量，输出为残差和雅可比</li>
+<li>以数组的形式，往<code>problem</code>中添加参数块</li>
+<li>往<code>problem</code>中添加残差块</li>
+<li>设定<code>options</code>，然后开始优化</li>
+</ul>
+<h3 id="factor">Factor</h3>
+<h4 id="imu_factor">imu_factor</h4>
+<h4 id="marginalization_factor">marginalization_factor</h4>
+<h4 id="projection_factor">projection_factor</h4>
+<h4 id="projection_td_factor">projection_td_factor</h4>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://asdleng.github.io/2022/02/28/VINS3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -998,7 +1132,7 @@ mjx-container[display="true"] + br {
               
                 <a href="/archives/%7C%7C%20archive">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
