@@ -360,7 +360,7 @@ mjx-container[display="true"] + br {
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2022/04/12/%E5%8A%A8%E5%8A%9B%E5%AD%A6slam%E6%8E%A8%E5%AF%BC/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2022/04/12/%E5%8A%A8%E5%8A%9B%E5%AD%A6slam%E6%8E%A8%E5%AF%BC/" itemprop="url">SLAM：基于车辆动力学模型的iEKF推导</a></h1>
         
 
         <div class="post-meta">
@@ -372,7 +372,7 @@ mjx-container[display="true"] + br {
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-04-12T16:33:25+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-04-12T16:43:05+08:00">
                 2022-04-12
               </time>
             
@@ -411,183 +411,14 @@ mjx-container[display="true"] + br {
 
       
         
-          
-            <h1 id="slam基于车辆动力学模型的iekf推导">SLAM：基于车辆动力学模型的iEKF推导</h1>
-<h2 id="前言">前言</h2>
-<p>本文参照FAST-LIO的iEKF思路，将IMU动力学模型替换为车辆二自由度动力学模型，推导了iEKF的公式。车辆二自由度动力学模型如下所示：</p>
-<p><img src="C:\Users\LENOVO\AppData\Roaming\Typora\typora-user-images\image-20220406193852108.png" alt="image-20220406193852108" /> <span class="math display">\[
-\begin{array}{l}
-\left(k_{f}+k_{r}\right) \beta+\frac{1}{v_{x}}\left(l_{f} k_{f}-l_{r} k_{r}\right) \omega_{r}-k_{f} \alpha=m\left(\dot{v}_{y}+v_{x} \omega_{r}\right) \\
-\left(l_{f} k_{f}-l_{r} k_{r}\right) \beta+\frac{1}{v_{r}}\left(l_{f}{ }^{2} k_{f}+l_{r}{ }^{2} k_{r}\right) \omega_{r}-l_{f} k_{f} \alpha=I_{z} \dot{\omega}_{r}
-\end{array}
-\]</span> 在稳态响应时，质心侧偏角<span class="math inline">\(\beta\)</span>和横摆角速度<span class="math inline">\(\omega\)</span>的表达式为： <span class="math display">\[
-\begin{aligned}
-\beta &amp;=\frac{1+\frac{m}{2 l} \frac{l_{f}}{l_{r} k_{r}} v^{2}}{1-K v^{2}} \frac{l_{r}}{l} \alpha \\
-\omega &amp;=\frac{1}{1-K v^{2}} \frac{v}{l} \alpha
-\end{aligned}
-\]</span> 其中<span class="math inline">\(l=l_r+l_f\)</span>，<span class="math inline">\(K\)</span>为稳定性因数： <span class="math display">\[
-K=\frac{m}{l}\left(\frac{l_{f}}{k_{r}}-\frac{l_{r}}{k_{f}}\right)
-\]</span></p>
-<h2 id="状态预测">1. 状态预测</h2>
-<h3 id="说明求误差状态方程的方法">说明——求误差状态方程的方法：</h3>
-<p>在状态预测部分，我们需要知道状态递推、误差状态递推的式子。状态递推是容易得到的，而关于误差状态递推，我们采用状态方程一阶泰勒展开的方式进行推导，下面给出证明，首先，我们知道系统的状态方程： <span class="math display">\[
-\mathbf{x} = f(\mathbf{x},\mathbf{u})
-\]</span></p>
-<p><span class="math inline">\(\mathbf{x}\)</span>和<span class="math inline">\(\mathbf{u}\)</span>和分别是状态量和输入量，误差状态递推的式子是： <span class="math display">\[
-\delta \mathbf{x}_{k}=\mathbf{F} \delta \mathbf{x}_{k-1}+\mathbf{G} \mathbf{w}
-\]</span> 其中<span class="math inline">\(\delta \mathbf{x}\)</span>是误差状态(也可写作<span class="math inline">\(\widetilde{\mathbf{x}}\)</span>)，<span class="math inline">\(\mathbf{w}\)</span>是噪声，<span class="math inline">\(\mathbf{F}\)</span>和<span class="math inline">\(\mathbf{G}\)</span>是我们要求的，实际上，这个<span class="math inline">\(\mathbf{F}\)</span>和<span class="math inline">\(\mathbf{G}\)</span>分别是状态方程对<span class="math inline">\(\mathbf{x}\)</span>和<span class="math inline">\(\mathbf{u}\)</span>的导数，由状态方程在<span class="math inline">\(\mathbf{x}_{k-1}\)</span>处泰勒展开得到，和状态方程的一阶泰勒展开是一致的。 <span class="math display">\[
-\begin{aligned}
-\mathbf{x}_{k} &amp;=f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1} \right) \\
-\hat{\mathbf{x}}_{k}+\delta \mathbf{x}_{k} &amp;=f\left(\hat{\mathbf{x}}_{k-1}+\delta \mathbf{x}_{k-1}, {\mathbf{u}}_{k-1}+\mathbf{w} \right) \\
-\hat{\mathbf{x}}_{k}+\delta \mathbf{x}_{k} &amp;\approx f\left(\hat{\mathbf{x}}_{k-1}, {\mathbf{u}}_{k-1} \right)+\mathbf{F} \delta \mathbf{x}_{k-1}+\mathbf{G} \mathbf{w} \\
-\delta \mathbf{x}_{k} &amp; = \mathbf{F} \delta \mathbf{x}_{k-1}+\mathbf{G} \mathbf{w}
-\end{aligned}
-\]</span> 明白上面之后，再来看状态方程的递推。我们将状态方程由连续到离散进行转化，同样是一阶线性，那么问题就变成了 <span class="math display">\[
-\begin{aligned}
-\mathbf{x}_{k} &amp;\approx  \mathbf{x}_{k-1} \boxplus
- f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1} \right)\Delta t\\
-\mathbf{x}_{k} &amp;= \mathbf{F}\mathbf{x}_{k-1}+\mathbf{G}\mathbf{w}
-\end{aligned}
-\]</span> 那么两个雅可比矩阵就是： <span class="math display">\[
-\begin{align}
-\mathbf{F} &amp;=  \mathbf{I}+\frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1} \right)}{\part \mathbf{x}_{k-1}}\Delta t\\
-\mathbf{G} &amp;= \frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1} \right)}{\part \mathbf{u}_{k-1}}\Delta t\\
-\end{align}
-\]</span></p>
-<h3 id="问题建模">问题建模：</h3>
-<p>首先定义状态空间如下： <span class="math display">\[
-\begin{align}
-\mathbf{x} &amp;= [^{G}\mathbf{R}^{\top}_{V},^{G}\mathbf{p}^{\top}_{V},^{V}\mathbf{R}^{\top}_{L},^{V}\mathbf{p}^{\top}_{L},\mathbf{\xi}^{\top}]\in \mathcal{M}\\
-\mathbf{u} &amp;= [\alpha_m^{\top},v_m^{\top}]\\
-\mathbf{w} &amp;=[n_a,n_v]\\
-\end{align}
-\]</span> 其中，<span class="math inline">\(G\)</span>代表大地坐标系；<span class="math inline">\(V\)</span>代表车辆坐标系，原点在质心上；<span class="math inline">\(L\)</span>代表激光雷达坐标系；<span class="math inline">\(\mathbf{R}\)</span>和<span class="math inline">\(\mathbf{p}\)</span>分别代表旋转和平移；<span class="math inline">\(\mathbf{\xi}\)</span>代表车辆动力学参数，<span class="math inline">\(\mathbf{\xi} = [l_f,k_f,k_r]^{\top}\)</span>。系统的状态方程为： <span class="math display">\[
-f(\mathbf{x},\mathbf{u}) = \left[\begin{array}\\
-\boldsymbol{\omega}\\
-^G\mathbf{R}_V \mathbf{v}\\
-\boldsymbol{0}_{3\times1}\\
-\boldsymbol{0}_{3\times1}\\
-\boldsymbol{0}_{3\times1}\\
-\end{array}\right]
-\]</span> 其中： <span class="math display">\[
-\boldsymbol{\omega} =\left[\begin{array}\\
-0\\
-0\\
-\frac{1}{1-K v_m}\frac{v_m}{l}\alpha_m\\
-\end{array}\right]
-\]</span></p>
-<p><span class="math display">\[
-\mathbf{v} =\left[\begin{array}\\
-v_m\cos(\beta)\\
-v_m\sin(\beta)\\
-0\\
-\end{array}\right]
-\]</span></p>
-那么根据链式法则，状态方程对<span class="math inline">\(\mathbf{x}_{k-1}\)</span>的雅可比为： $$
-<span class="math display">\[\begin{align}
-\frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}\right)}{\part \mathbf{x}_{k-1}}
-&amp; = \left[\begin{array}\\
-
-\mathbf{0}_{3\times3}  &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{2\times3}\\
-
- &amp;&amp;&amp; &amp;\frac{\part \mathbf{\omega}_3}{\part K}(\frac{\part K}{\part \mathbf{\xi}})^{\top}\\\hdashline
- 
--[^G\mathbf{R}_V\mathbf{v}]_{\times} &amp;\mathbf{0}_{3\times3}    &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3}&amp;^G\mathbf{R}_V\frac{\part \mathbf{v}}{\part \beta}(\frac{\part \beta}{\part \mathbf{\xi}})^{\top}\\\hdashline
-\mathbf{0}_{3\times3}                &amp;\mathbf{0}_{3\times3}    &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3}\\\hdashline
-\mathbf{0}_{3\times3}                &amp;\mathbf{0}_{3\times3}    &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3}\\\hdashline
-\mathbf{0}_{3\times3}                &amp;\mathbf{0}_{3\times3}    &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3} &amp;\mathbf{0}_{3\times3}\\
-\end{array}\right]
-
-\end{align}\]</span>
-<p><span class="math display">\[
-其中，$-[^G\mathbf{R}_V\mathbf{v}]_{\times}$用到了SO(3)上的左扰动。上式一些变量详细展开：
-\]</span> =_{m} \ = [, , -]^{}\  = \</p>
-<p> = <span class="math display">\[
-至此，$\frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}\right)}{\part \mathbf{x}_{k-1}}$推导完成了，然后根据$\mathbf{F} =  \mathbf{I}+\frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}\right)}{\part \mathbf{x}_{k-1}}\Delta t$就能算出$\mathbf{F}$了，下面求$\mathbf{G}$：
-\]</span>  = <span class="math display">\[
-其中，
-\]</span> _{31} = - $$</p>
-<p><span class="math display">\[
-\mathbf{G}_{32} = \frac{\alpha _{m}\,m\,v_{m}\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^3\,{\left(\frac{m\,v_{m}\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^2}-1\right)}^2}-\frac{\alpha _{m}}{l\,\left(\frac{m\,v_{m}\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^2}-1\right)}
-\]</span></p>
-<p><span class="math inline">\(\mathbf{G}_{\mathbf{vu}}\)</span>是变量<span class="math inline">\(\mathbf{v}\)</span>对控制量<span class="math inline">\(\mathbf{u}\)</span>的雅可比： <span class="math display">\[
-\mathbf{G}_{\mathbf{vu}} = \left[\begin{array}\\
-{G}_{\mathbf{vu}11} 
-&amp;{G}_{\mathbf{vu}12}\\
-{G}_{\mathbf{vu}21}
-&amp;{G}_{\mathbf{vu}22}\\
-0 &amp;0
-\end{array}\right]
-\]</span></p>
-<p><span class="math display">\[
-{G}_{\mathbf{vu}11} = -\frac{l_{r}\,v_{m}\,\sin\left(\frac{\alpha _{m}\,l_{r}\,\left(\frac{l_{f}\,m\,{v_{m}}^2}{2\,k_{r}\,l\,l_{r}}+1\right)}{l\,\left(\frac{m\,{v_{m}}^2\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^2}-1\right)}\right)\,\left(\frac{l_{f}\,m\,{v_{m}}^2}{2\,k_{r}\,l\,l_{r}}+1\right)}{l\,\left(\frac{m\,{v_{m}}^2\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^2}-1\right)}
-\]</span></p>
-<p>$$ {G}<em>{12} = ()-v</em>{m},()\</p>
-<p>,(-) $$</p>
-<p><span class="math display">\[
-{G}_{\mathbf{vu}21} = -\frac{l_{r}\,v_{m}\,\cos\left(\frac{\alpha _{m}\,l_{r}\,\left(\frac{l_{f}\,m\,{v_{m}}^2}{2\,k_{r}\,l\,l_{r}}+1\right)}{l\,\left(\frac{m\,{v_{m}}^2\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^2}-1\right)}\right)\,\left(\frac{l_{f}\,m\,{v_{m}}^2}{2\,k_{r}\,l\,l_{r}}+1\right)}{l\,\left(\frac{m\,{v_{m}}^2\,\left(k_{f}\,l_{f}-k_{r}\,l_{r}\right)}{k_{f}\,k_{r}\,l^2}-1\right)}
-\]</span></p>
-<p>$$ {G}<em>{22}=-()-v</em>{m},()\</p>
-<p>,(-) $$</p>
-<p>至此，<span class="math inline">\(\frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}\right)}{\part \mathbf{u}_{k-1}}\)</span>就推导完成了，由<span class="math inline">\(\mathbf{G} = \frac{\part f\left(\mathbf{x}_{k-1}, \mathbf{u}_{k-1}\right)}{\part \mathbf{u}_{k-1}}\Delta t\)</span>可以得到<span class="math inline">\(\mathbf{G}\)</span>。这样，就可以进行状态和协方差矩阵的递推了： <span class="math display">\[
-\begin{array}{l}
-\hat{\mathbf{x}}_{k+1}=\hat{\mathbf{x}}_{k} \boxplus
-\left( f\left(\hat{\mathbf{x}}_{k}, \mathbf{u}_{k}\right)\Delta t \right) \\
-\hat{\mathbf{P}}_{k+1}=\mathbf{F} \hat{\mathbf{P}}_{k} \mathbf{F}+\mathbf{G} \mathbf{Q}_{k} \mathbf{G}\\
-\end{array}
-\]</span></p>
-<h2 id="量测更新">2. 量测更新</h2>
-<p>iEKF的本质是一个最大后验估计(MAP)，那么我们就需要最小化如下式子： <span class="math display">\[
-\min _{\widetilde{\mathbf{x}}_{k}^{\kappa}}\left(\left\|\mathbf{x}_{k} \boxminus \hat{\mathbf{x}}_{k}\right\|_{\hat{\mathbf{P}}_{k}^{-1}}^{2}+\sum_{j=1}^{m}\left\|\mathbf{z}_{j}^{\kappa}+\mathbf{H}_{j}^{\kappa} \widetilde{\mathbf{x}}_{k}^{\kappa}\right\|_{\mathbf{R}_{j}^{-1}}^{2}\right)
-\]</span> 其中，<span class="math inline">\(\hat{\mathbf{x}}_{k}\)</span>是估计值，<span class="math inline">\({\mathbf{x}}_{k}\)</span>是真实值，<span class="math inline">\(\mathbf{z}\)</span>是残差，<span class="math inline">\(\mathbf{H}_j^{\kappa}\)</span>是在第<span class="math inline">\(\kappa\)</span>次迭代时第<span class="math inline">\(j\)</span>个残差函数对误差状态的雅可比(代入误差为0时的值)，<span class="math inline">\(m\)</span>代表观测到的平面特征的个数，<span class="math inline">\(\kappa\)</span>代表迭代数，<span class="math inline">\(\hat{\mathbf{P}}\)</span>和<span class="math inline">\(\mathbf{R}_j\)</span>分别是状态递推的协方差矩阵和观测方程的协方差矩阵。由于<span class="math inline">\(\sum_{j=1}^{m}\)</span>的存在，我们重新进行整理，可以组成一个大矩阵<span class="math inline">\(\mathbf{H}=\left[\mathbf{H}_{1}^{\kappa^{\top}}, \ldots, \mathbf{H}_{m}^{\kappa^{\top}}\right]^{\top}\)</span>，<span class="math inline">\(\mathbf{R}=\operatorname{diag}\left(\mathbf{R}_{1}, \cdots \mathbf{R}_{m}\right)\)</span>，<span class="math inline">\(\mathbf{P} = \left(\mathbf{J}^{\kappa}\right)^{-1} \hat{\mathbf{P}}_{k}\left(\mathbf{J}^{\kappa}\right)^{-\top}\)</span>，<span class="math inline">\(\mathbf{J}^{\kappa}\)</span>是第<span class="math inline">\(\kappa\)</span>次迭代时状态残差对误差状态的雅可比(代入误差为0时的值)。</p>
-在这一部分，我们需要知道两个雅可比，一个是第<span class="math inline">\(\kappa\)</span>次迭代时，“状态残差“对误差状态的雅可比<span class="math inline">\(\mathbf{J}^{\kappa}\)</span>；另一个是第<span class="math inline">\(\kappa\)</span>次迭代时，测量残差对误差状态的雅可比<span class="math inline">\(\mathbf{H}^{\kappa}\)</span>。先来看<span class="math inline">\(\mathbf{J}^{\kappa}\)</span> $$ ^{} = <span class="math display">\[
-其中
-\]</span>
-<span class="math display">\[\begin{aligned}
-\mathbf{A}(\mathbf{u})^{-1} &amp;=\mathbf{I}-\frac{1}{2}\lfloor\mathbf{u}\rfloor_{\wedge}+(1-\boldsymbol{\alpha}(\|\mathbf{u}\|)) \frac{\lfloor\mathbf{u}\rfloor_{\Lambda}^{2}}{\|\mathbf{u}\|^{2}} \\
-\alpha(\mathrm{m}) &amp;=\frac{\mathrm{m}}{2} \cot \left(\frac{\mathrm{m}}{2}\right)=\frac{\mathrm{m}}{2} \frac{\cos (\mathrm{m} / 2)}{\sin (\mathrm{m} / 2)}
-\end{aligned}\]</span>
-<p>$$ 是SO(3)上的右雅可比。</p>
-<p>然后来看<span class="math inline">\(\mathbf{H}^{\kappa}\)</span>，首先我们写出观测残差的表达式： <span class="math display">\[
-\mathbf{z}_j^{\kappa} = \mathbf{u}_j^{\top}(^{G}\hat{\mathbf{T}}_{Vk}^{\kappa} \ ^{V}\hat{\mathbf{T}}_{Lk}^{\kappa} \ ^{L}\mathbf{p}_j-\ ^{G}\mathbf{q}_j)
-\]</span> 其中<span class="math inline">\(j\)</span>代表第<span class="math inline">\(j\)</span>个特征，<span class="math inline">\(\kappa\)</span>代表迭代次数，<span class="math inline">\(\mathbf{u}_j^{\top}\)</span>第<span class="math inline">\(j\)</span>个特征对应平面的法向量，<span class="math inline">\(^{V}\mathbf{p}_j\)</span>代表第<span class="math inline">\(j\)</span>个特征的在lidar系下的3D点坐标，<span class="math inline">\(^{G}\mathbf{q}_j\)</span></p>
-<p>代表第<span class="math inline">\(j\)</span>个特征对应平面上的一个点。</p>
-<p>将上式带入旋转矩阵和平移向量，得到： <span class="math display">\[
-\mathbf{z}_j^{\kappa} = \mathbf{u}_j^{\top}(^{G}\hat{\mathbf{R}}_{Vk}^{\kappa}(^{V}\hat{\mathbf{R}}_{Lk}^{\kappa} \ ^{L}\mathbf{p}_j+^{V}\hat{\mathbf{p}}_{Lk}^{\kappa})+^{G}\hat{\mathbf{p}}_{Vk}^{\kappa}
--\ ^{G}\mathbf{q}_j)
-\]</span> 对其添加一个扰动，得到： <span class="math display">\[
-\mathbf{z}_j^{\kappa}(\hat{\mathbf{x}}^{\kappa}_k \boxplus \widetilde{\mathbf{x}}^{\kappa}_k)= \mathbf{u}_j^{\top}(^{G}\hat{\mathbf{R}}_{Vk}^{\kappa} \exp(^{G}\widetilde{\boldsymbol{\theta}}^{\kappa}_V)  (^{V}\hat{\mathbf{R}}_{Lk}^{\kappa} \exp(^{V}\widetilde{\boldsymbol{\theta}}^{\kappa}_L) \ ^{L}\mathbf{p}_j+\ ^{V}\hat{\mathbf{p}}_{Lk}^{\kappa} +\ ^{V}\widetilde{\mathbf{p}}_{Lk}^{\kappa})+\ ^{G}\hat{\mathbf{p}}_{Vk}^{\kappa} +\ ^{G}\widetilde{\mathbf{p}}_{Vk}^{\kappa}
--\ ^{G}\mathbf{q}_j)
-\]</span> 根据BCH近似公式原地展开得到： <span class="math display">\[
-\mathbf{z}_j^{\kappa}(\hat{\mathbf{x}}^{\kappa}_k \boxplus \widetilde{\mathbf{x}}^{\kappa}_k)= \mathbf{u}_j^{\top}(^{G}\hat{\mathbf{R}}_{Vk}^{\kappa} (\mathbf{I}+\ [^{G}\widetilde{\boldsymbol{\theta}}^{\kappa}_V]_{\times})  (^{V}\hat{\mathbf{R}}_{Lk}^{\kappa} (\mathbf{I}+\ [^{V}\widetilde{\boldsymbol{\theta}}^{\kappa}_L]_{\times}) \ ^{L}\mathbf{p}_j+\ ^{V}\hat{\mathbf{p}}_{Lk}^{\kappa} +\ ^{V}\widetilde{\mathbf{p}}_{Lk}^{\kappa})+\ ^{G}\hat{\mathbf{p}}_{Vk}^{\kappa} +\ ^{G}\widetilde{\mathbf{p}}_{Vk}^{\kappa}
--\ ^{G}\mathbf{q}_j)
-\]</span></p>
-<p><span class="math display">\[
-\mathbf{z}_j^{\kappa}(\hat{\mathbf{x}}^{\kappa}_k \boxplus \widetilde{\mathbf{x}}^{\kappa}_k)=
-\mathbf{z}_j^{\kappa}(\hat{\mathbf{x}}^{\kappa}_k)\boxplus \mathbf{u}_j^{\top}(^{G}\hat{\mathbf{R}}_{Vk}^{\kappa}[^{G}\widetilde{\boldsymbol{\theta}}^{\kappa}_V]_{\times}(^{V}\hat{\mathbf{R}}_{Lk}^{\kappa}\ ^{L}\mathbf{p}_j+\ ^{V}\hat{\mathbf{p}}_{Lk}^{\kappa}) +\ 
-^{G}\hat{\mathbf{R}}_{Vk}^{\kappa}\ ^{V}\hat{\mathbf{R}}_{Lk}^{\kappa}\ [^{V}\widetilde{\boldsymbol{\theta}}^{\kappa}_L]_{\times}\ ^{L}\mathbf{p}_j+\ 
-^{G}\hat{\mathbf{R}}_{Vk}^{\kappa}\ ^{V}\widetilde{\mathbf{p}}_{Lk}^{\kappa}+\ ^{G}\widetilde{\mathbf{p}}_{Vk}^{\kappa})
-\]</span></p>
-<p>将叉积交换顺序，得到维度为<span class="math inline">\(1\times15\)</span>的<span class="math inline">\(\mathbf{H}^{\kappa}_j\)</span>： $$ ^{}_j=_j^{} $$</p>
-<p><span class="math display">\[
-\mathbf{H}=\left[\mathbf{H}_{1}^{\kappa^{\top}}, \ldots, \mathbf{H}_{m}^{\kappa^{\top}}\right]^{\top}
-\]</span></p>
-<p><strong>从<span class="math inline">\(\mathbf{H}^{\kappa}_j\)</span>中我们可以发现，其对应的对车辆动力学参数状态的雅可比为0，因此，仅使用激光雷达是不能实现动力学参数的在线估计的。</strong>至此，已经完成了所有雅可比矩阵的计算，然后计算这一轮迭代的卡尔曼增益和状态更新： <span class="math display">\[
-\begin{aligned}
-\mathbf{K} &amp;=\left(\mathbf{H}^{\top} \mathbf{R}^{-1} \mathbf{H}+\mathbf{P}^{-1}\right)^{-1} \mathbf{H}^{\top} \mathbf{R}^{-1} \\
-\hat{\mathbf{x}}_{k}^{\kappa+1} &amp;=\hat{\mathbf{x}}_{k}^{\kappa} \boxplus\left(-\mathbf{K} \mathbf{z}_{k}^{\kappa}-(\mathbf{I}-\mathbf{K} \mathbf{H})\left(\mathbf{J}^{\kappa}\right)^{-1}\left(\hat{\mathbf{x}}_{k}^{\kappa} \boxminus \hat{\mathbf{x}}_{k}\right)\right)
-\end{aligned}
-\]</span> 重复上述迭代，直到<span class="math inline">\(\left\|\hat{\mathbf{x}}_{k}^{\kappa+1} \boxminus \hat{\mathbf{x}}_{k}^{\kappa}\right\|&lt;\epsilon\)</span>，迭代收敛。最终我们得到<span class="math inline">\(\overline{\mathbf{x}}_{k}=\hat{\mathbf{x}}_{k}^{\kappa+1}\)</span>和<span class="math inline">\(\overline{\mathbf{P}}_{k}=(\mathbf{I}-\mathbf{K H}) \mathbf{P}\)</span>作为下一个阶段状态预测的初值。</p>
-<h1 id="总结">总结</h1>
-<p>如果使用上述框架，<strong>无法实现车辆动力学参数(质心位置、前后轮侧偏刚度)的在线估计</strong>。其原因是，如果使用上述方法进行建模，观测方程对动力学参数状态的雅可比为0。如果系统运行起来，那么他就会一直维持动力学参数的初值不改变。所以想到的解决方法有如下几个：</p>
-<ul>
-<li><strong>加一个初始化的过程</strong> 这个思路和VIO初始化类似。在系统运行前单独设置一个初始化过程，在初始化时，激光雷达和动力学模型是解耦状态，将纯激光雷达slam的位姿轨迹和动力学模型的位姿轨迹进行对齐，根据多帧平行四边形的约束构建超定方程，基于svd分解求解出外参，然后再基于外参构建动力学预积分，求解出动力学参数。 该方法创新性强，不需要额外添加传感器，而且通用性灵活性强，适用于各种车辆(乘用车、商用车载重不同等等)；缺点是添加一个初始化的过程，系统变复杂。</li>
-<li><strong>不利用动力学-激光雷达系统进行动力学参数估计，采用离线估计的方法</strong> 采用传统的、动力学的方法进行离线估计。求得参数后固定下来不进行变动。 该方法精度高；缺点是创新性不强，实验复杂，需要调研考虑是否实际可行，而且实际工作中这些参数是变化的(对于乘用车可能变化很小，可以忽略不计)。</li>
-<li><strong>将IMU结合进来</strong> 将IMU结合进来，将其预积分值作为观测量，构建观测方程，有可能让动力学参数变为可观的了。 该方法精度较高；缺点是引入了新的传感器，整个系统框架变得复杂，需要重新推导。</li>
-</ul>
-<p>总之，二自由度动力学模型一定是存在局限性的，可能并不能精准地反映车辆的实际运行轨迹。实际运行中，由于路面不平等因素，去设计一个软件算法实现精确估计动力学参数也是不现实的。所以短期内，可以考虑先把这个问题放一放，给一个大致的动力学参数的范围(车辆的侧偏刚度都很大，如果设成无穷大就是运动学模型了)，将系统运行起来，验证动力学-激光slam的可行性，实现系统功能。后续在考虑动力学参数的问题。</p>
-
-          
+          <p>本文参照FAST-LIO的iEKF思路，将IMU动力学模型替换为车辆二自由度动力学模型，推导了iEKF的公式。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2022/04/12/%E5%8A%A8%E5%8A%9B%E5%AD%A6slam%E6%8E%A8%E5%AF%BC/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
